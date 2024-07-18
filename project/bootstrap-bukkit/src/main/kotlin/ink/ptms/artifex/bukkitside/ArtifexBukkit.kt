@@ -19,7 +19,7 @@ import java.io.File
  * @author 坏黑
  * @since 2022/5/19 12:16
  */
-@PlatformSide([Platform.BUKKIT])
+@PlatformSide(Platform.BUKKIT)
 object ArtifexBukkit : Plugin(), PlatformHelper  {
 
     @Awake(LifeCycle.INIT)
@@ -30,7 +30,7 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
             legacyFile.delete()
         }
         // 释放 bukkit api 文件
-        releaseResourceFile("runtime/bukkit-api.jar", true)
+        releaseResourceFile("runtime/bukkit-api.jar", false)
     }
 
     override fun plugin(name: String): Any? {

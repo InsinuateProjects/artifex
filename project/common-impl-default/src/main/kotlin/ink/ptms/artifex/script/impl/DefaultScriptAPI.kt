@@ -5,6 +5,7 @@ import ink.ptms.artifex.ArtifexAPI
 import ink.ptms.artifex.PlatformHelper
 import ink.ptms.artifex.script.*
 import taboolib.common.LifeCycle
+import taboolib.common.env.RuntimeDependency
 import taboolib.common.io.digest
 import taboolib.common.io.newFile
 import taboolib.common.io.taboolibId
@@ -13,8 +14,8 @@ import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.SkipTo
 import taboolib.common.platform.function.*
 import taboolib.common.util.resettableLazy
-import taboolib.library.jarrelocator.JarRelocator
-import taboolib.library.jarrelocator.Relocation
+import me.lucko.jarrelocator.JarRelocator
+import me.lucko.jarrelocator.Relocation
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.Configuration
 import taboolib.module.lang.sendLang
@@ -28,6 +29,11 @@ import java.util.concurrent.Executors
  * @author 坏黑
  * @since 2022/5/16 00:41
  */
+@RuntimeDependency(
+    "!me.lucko:jar-relocator:1.5",
+    test = "!me.lucko.jarrelocator.JarRelocator",
+    repository = "https://maven.aliyun.com/repository/central"
+)
 @SkipTo(LifeCycle.INIT)
 object DefaultScriptAPI : ArtifexAPI {
 

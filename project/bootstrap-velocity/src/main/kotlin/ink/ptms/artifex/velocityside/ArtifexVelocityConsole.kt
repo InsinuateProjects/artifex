@@ -1,3 +1,4 @@
+/*
 package ink.ptms.artifex.velocityside
 
 import net.kyori.adventure.text.Component
@@ -8,9 +9,11 @@ import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.util.unsafeLazy
 import taboolib.platform.VelocityPlugin
 
+*/
 /**
  * Copied and modified from TrPlugins/TrChat.
- */
+ *//*
+
 @PlatformSide([Platform.VELOCITY])
 class ArtifexVelocityConsole : ProxyCommandSender {
 
@@ -48,4 +51,4 @@ class ArtifexVelocityConsole : ProxyCommandSender {
         return sender.hasPermission(permission)
     }
 
-}
+}*/

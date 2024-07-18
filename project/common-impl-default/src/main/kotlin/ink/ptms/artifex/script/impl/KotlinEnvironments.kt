@@ -1,6 +1,7 @@
 package ink.ptms.artifex.script.impl
 
-import taboolib.common.TabooLibCommon
+import taboolib.common.PrimitiveIO
+import taboolib.common.PrimitiveSettings
 import taboolib.common.env.*
 import taboolib.common.io.newFile
 import taboolib.common.platform.function.getDataFolder
@@ -15,7 +16,7 @@ object KotlinEnvironments {
     /**
      * 获取 TabooLib 中的 env.properties 环境配置文件
      */
-    val properties = RuntimeEnv::class.java.getProperty<Properties>("ENV_PROPERTIES", isStatic = true)!!
+    val properties = PrimitiveSettings.RUNTIME_PROPERTIES
 
     /**
      * 默认下载源
@@ -53,12 +54,12 @@ object KotlinEnvironments {
         }
         val pomFile = File(baseDir, String.format("%s/%s/%s/%s-%s.pom", args[0].replace('.', '/'), args[1], args[2], args[1], args[2]))
         val pomShaFile = File(pomFile.path + ".sha1")
-        if (pomFile.exists() && pomShaFile.exists() && IO.readFile(pomShaFile).startsWith(IO.getHash(pomFile))) {
+        if (pomFile.exists() && pomShaFile.exists() && PrimitiveIO.readFile(pomShaFile).startsWith(PrimitiveIO.getHash(pomFile))) {
             downloader.loadDependencyFromInputStream(pomFile.toPath().toUri().toURL().openStream())
         } else {
             val pom = String.format("%s/%s/%s/%s/%s-%s.pom", repository, args[0].replace('.', '/'), args[1], args[2], args[1], args[2])
             try {
-                TabooLibCommon.print(String.format("Downloading library %s:%s:%s", args[0], args[1], args[2]))
+                PrimitiveIO.println(String.format("Downloading library %s:%s:%s", args[0], args[1], args[2]))
                 downloader.loadDependencyFromInputStream(URL(pom).openStream())
             } catch (ex: FileNotFoundException) {
                 throw ex
