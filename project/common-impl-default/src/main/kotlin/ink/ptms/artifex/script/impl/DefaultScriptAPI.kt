@@ -29,11 +29,6 @@ import java.util.concurrent.Executors
  * @author 坏黑
  * @since 2022/5/16 00:41
  */
-@RuntimeDependency(
-    "!me.lucko:jar-relocator:1.5",
-    test = "!me.lucko.jarrelocator.JarRelocator",
-    repository = "https://maven.aliyun.com/repository/central"
-)
 @SkipTo(LifeCycle.INIT)
 object DefaultScriptAPI : ArtifexAPI {
 

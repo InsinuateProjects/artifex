@@ -5,11 +5,9 @@ import taboolib.common.PrimitiveSettings
 import taboolib.common.env.*
 import taboolib.common.io.newFile
 import taboolib.common.platform.function.getDataFolder
-import taboolib.library.reflex.Reflex.Companion.getProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
-import java.util.*
 
 object KotlinEnvironments {
 
@@ -29,6 +27,13 @@ object KotlinEnvironments {
      */
     val repositoryTabooLib: String
         get() = "https://repo.tabooproject.org/repository/releases"
+
+
+    private val baseDir = newFile(getDataFolder(), "runtime/libraries", folder = true)
+
+    private val kotlinVersion = "1.8.20"
+
+    private val relocation = listOf(JarRelocation("kotlin", "kotlin${kotlinVersion.replace(".", "")}"))
 
     fun loadDependencies() {
         val kotlinVersion = "1.8.20"

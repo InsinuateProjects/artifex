@@ -6,5 +6,5 @@ taboolib {
 }
 
 dependencies {
-    taboo("io.github:fast-classpath-scanner:3.1.13")
+    compileOnly("io.github:fast-classpath-scanner:3.1.13")
 }
