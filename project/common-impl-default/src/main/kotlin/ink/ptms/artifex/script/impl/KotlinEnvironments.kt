@@ -45,17 +45,23 @@ object KotlinEnvironments {
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.intellij.deps:trove4j:1.0.20181211", repository)
         loadDependencies("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2", repository)
+        // 需要补 common-reflex
+        loadDependencies(
+            "io.izzel.taboolib:common-reflex:${PrimitiveSettings.TABOOLIB_VERSION}",
+            repositoryTabooLib,
+            dir =  File(PrimitiveSettings.FILE_LIBS),
+        )
     }
 
-    fun loadDependencies(source: String, repository: String) {
+    fun loadDependencies(source: String, repository: String, dir: File = baseDir) {
         val args = source.split(":")
-        val downloader = DependencyDownloader(baseDir)
+        val downloader = DependencyDownloader(dir)
         if (properties.contains("repository-$repository")) {
             downloader.addRepository(Repository(properties.getProperty("repository-$repository")))
         } else {
             downloader.addRepository(Repository(repository))
         }
-        val pomFile = File(baseDir, String.format("%s/%s/%s/%s-%s.pom", args[0].replace('.', '/'), args[1], args[2], args[1], args[2]))
+        val pomFile = File(dir, String.format("%s/%s/%s/%s-%s.pom", args[0].replace('.', '/'), args[1], args[2], args[1], args[2]))
         val pomShaFile = File(pomFile.path + ".sha1")
         if (pomFile.exists() && pomShaFile.exists() && PrimitiveIO.readFile(pomShaFile).startsWith(PrimitiveIO.getHash(pomFile))) {
             downloader.loadDependencyFromInputStream(pomFile.toPath().toUri().toURL().openStream())
@@ -85,6 +91,7 @@ object KotlinEnvironments {
         val modules = listOf(
             "common-env",
             "common-util",
+            "common-reflex",
             "common-legacy-api",
             "common-platform-api",
             *PrimitiveSettings.INSTALL_MODULES
