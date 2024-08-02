@@ -2,6 +2,9 @@ taboolib {
     version {
         skipKotlinRelocate = true
     }
+    env {
+        install("platform-velocity-impl")
+    }
     subproject = true
 }
 

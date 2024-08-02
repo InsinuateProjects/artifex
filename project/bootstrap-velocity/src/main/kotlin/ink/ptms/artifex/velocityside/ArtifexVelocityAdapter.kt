@@ -1,4 +1,4 @@
-/*
+
 package ink.ptms.artifex.velocityside
 
 import com.velocitypowered.api.command.CommandSource
@@ -12,7 +12,6 @@ import taboolib.platform.VelocityPlugin
 import taboolib.platform.type.VelocityCommandSender
 import taboolib.platform.type.VelocityPlayer
 
-*/
 /**
  * Artifex
  * ink.ptms.artifex.velocityside.ArtifexVelocityAdapter
@@ -20,9 +19,8 @@ import taboolib.platform.type.VelocityPlayer
  * @author scorez
  * @from TabooLib
  * @since 4/23/24 13:08.
- *//*
-
-@PlatformSide([Platform.VELOCITY])
+ */
+@PlatformSide(Platform.VELOCITY)
 class ArtifexVelocityAdapter : PlatformAdapter {
 
     private val plugin by unsafeLazy { VelocityPlugin.getInstance() }
@@ -54,4 +52,4 @@ class ArtifexVelocityAdapter : PlatformAdapter {
     override fun allWorlds(): List<String> {
         TODO("Not yet implemented")
     }
-}*/
+}

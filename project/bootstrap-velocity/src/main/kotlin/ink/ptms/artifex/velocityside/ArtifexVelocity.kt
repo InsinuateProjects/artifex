@@ -30,9 +30,9 @@ object ArtifexVelocity : Plugin(), PlatformHelper {
     }
 
     override fun onLoad() {
-/*        val adapter = ArtifexVelocityAdapter()
+        val adapter = ArtifexVelocityAdapter()
         val adapterKey = PlatformFactory.serviceMap.keys.first { it.contains("PlatformAdapter") }
-        PlatformFactory.serviceMap[adapterKey] = adapter*/
+        PlatformFactory.serviceMap[adapterKey] = adapter
 
         PlatformFactory.awokenMap["ink.ptms.artifex.PlatformHelper"] = this
     }
