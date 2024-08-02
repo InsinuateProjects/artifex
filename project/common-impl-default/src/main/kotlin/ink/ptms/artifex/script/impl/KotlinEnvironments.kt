@@ -81,7 +81,15 @@ object KotlinEnvironments {
 
     fun getTabooModules(): List<File> {
         val files = mutableListOf<File>()
-        val modules = PrimitiveSettings.INSTALL_MODULES.map {
+        // 必须补全缺失的 common 模块
+        val modules = listOf(
+            "common-env",
+            "common-util",
+            "common-legacy-api",
+            "common-platform-api",
+            *PrimitiveSettings.INSTALL_MODULES
+        )
+        files += modules.map {
             File(
                 PrimitiveSettings.FILE_LIBS,
                 String.format(
@@ -95,7 +103,6 @@ object KotlinEnvironments {
                 )
             )
         }
-        files += modules
         files += File("cache/taboolib/ink.ptms.artifex").listFiles() ?: arrayOf()
         return files
     }
