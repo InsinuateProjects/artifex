@@ -14,10 +14,6 @@ taboolib {
             name("坏黑")
         }
     }
-    exclude("META-INF/maven/**")
-    exclude("META-INF/tf/**")
-    exclude("module-info.java")
-//    exclude("kotlin.Metadata")
 }
 
 dependencies {
@@ -67,6 +63,14 @@ tasks {
             .forEach {
                 from(it.sourceSets["main"].output)
             }
+        exclude("META-INF/maven/**")
+        exclude("META-INF/tf/**")
+        exclude("module-info.java")
+//    exclude("kotlin.Metadata")
+    }
+
+    taboolibMainTask {
+        dependsOn(jar)
     }
 
     build {
@@ -101,7 +105,7 @@ tasks {
                     applyToZip(new, version, "proxy/velocity", "jar-proxy-velocity")
                 }
             }
-            file.delete()
+//            file.delete()
         }
     }
 }

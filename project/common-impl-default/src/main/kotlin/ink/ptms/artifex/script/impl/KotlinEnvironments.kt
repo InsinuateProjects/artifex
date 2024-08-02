@@ -36,7 +36,6 @@ object KotlinEnvironments {
     private val relocation = listOf(JarRelocation("kotlin", "kotlin${kotlinVersion.replace(".", "")}"))
 
     fun loadDependencies() {
-        val kotlinVersion = "1.8.20"
         loadDependencies("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-script-runtime:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion", repository)
@@ -50,7 +49,6 @@ object KotlinEnvironments {
 
     fun loadDependencies(source: String, repository: String) {
         val args = source.split(":")
-        val baseDir = newFile(getDataFolder(), "runtime/libraries", folder = true)
         val downloader = DependencyDownloader(baseDir)
         if (properties.contains("repository-$repository")) {
             downloader.addRepository(Repository(properties.getProperty("repository-$repository")))
@@ -81,9 +79,29 @@ object KotlinEnvironments {
         }
     }
 
+    fun getTabooModules(): List<File> {
+        val files = mutableListOf<File>()
+        val modules = PrimitiveSettings.INSTALL_MODULES.map {
+            File(
+                PrimitiveSettings.FILE_LIBS,
+                String.format(
+                    "%s/%s/%s/%s-%s.jar",
+//                    PrimitiveLoader.TABOOLIB_GROUP.replace(".", "/"),
+                    "io/izzel/taboolib",
+                    it,
+                    PrimitiveSettings.TABOOLIB_VERSION,
+                    it,
+                    PrimitiveSettings.TABOOLIB_VERSION
+                )
+            )
+        }
+        files += modules
+        files += File("cache/taboolib/ink.ptms.artifex").listFiles() ?: arrayOf()
+        return files
+    }
+
     fun getKotlinFiles(): List<File> {
-        val kotlinVersion = "1.8.20"
-        val baseFile = File(properties.getProperty("library", "libs"))
+        val baseFile = File(PrimitiveSettings.FILE_LIBS)
         val files = ArrayList<File>()
         files += File(baseFile, "org/jetbrains/kotlin/kotlin-stdlib/$kotlinVersion/kotlin-stdlib-$kotlinVersion.jar")
         files += File(baseFile, "org/jetbrains/kotlin/kotlin-stdlib-common/$kotlinVersion/kotlin-stdlib-common-$kotlinVersion.jar")
