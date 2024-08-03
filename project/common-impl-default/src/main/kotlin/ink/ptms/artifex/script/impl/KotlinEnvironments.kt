@@ -50,10 +50,11 @@ object KotlinEnvironments {
             "io.izzel.taboolib:common-reflex:${PrimitiveSettings.TABOOLIB_VERSION}",
             repositoryTabooLib,
             dir =  File(PrimitiveSettings.FILE_LIBS),
+            impl = false
         )
     }
 
-    fun loadDependencies(source: String, repository: String, dir: File = baseDir) {
+    fun loadDependencies(source: String, repository: String, dir: File = baseDir, impl: Boolean = true) {
         val args = source.split(":")
         val downloader = DependencyDownloader(dir)
         if (properties.contains("repository-$repository")) {
@@ -74,7 +75,10 @@ object KotlinEnvironments {
                 throw ex
             }
         }
-        downloader.loadDependency(downloader.repositories, Dependency(args[0], args[1], args[2], DependencyScope.RUNTIME))
+        downloader.loadDependency(
+            downloader.repositories,
+            Dependency(args[0], args[1], args[2], if (impl) DependencyScope.RUNTIME else DependencyScope.PROVIDED)
+        )
     }
 
     fun getFiles(file: File): List<File> {
