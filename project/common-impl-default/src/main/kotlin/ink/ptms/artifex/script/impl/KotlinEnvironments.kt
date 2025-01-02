@@ -3,6 +3,9 @@ package ink.ptms.artifex.script.impl
 import taboolib.common.PrimitiveIO
 import taboolib.common.PrimitiveSettings
 import taboolib.common.env.*
+import taboolib.common.env.legacy.Dependency
+import taboolib.common.env.legacy.DependencyDownloader
+import taboolib.common.env.legacy.Repository
 import taboolib.common.io.newFile
 import taboolib.common.platform.function.getDataFolder
 import java.io.File

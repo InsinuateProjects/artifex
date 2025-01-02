@@ -3,7 +3,7 @@ taboolib {
         skipKotlinRelocate = true
     }
     env {
-        install("platform-velocity-impl")
+//        install("platform-velocity-impl")
     }
     subproject = true
 }

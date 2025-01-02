@@ -29,7 +29,7 @@ plugins {
     id("org.gradle.maven-publish")
     id("org.jetbrains.kotlin.jvm") version "1.8.20"
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
-    id("io.izzel.taboolib") version "2.0.13"
+    id("io.izzel.taboolib") version "2.0.22"
 }
 
 subprojects {
@@ -47,26 +47,29 @@ subprojects {
     taboolib {
         env {
             install(
-                CONFIGURATION,
-                CHAT,
-                LANG,
-                KETHER,
-                EFFECT,
-                DATABASE
+                Basic,
+                MinecraftChat,
+                I18n,
+                Kether,
+                MinecraftEffect,
+                Database, DatabasePlayer, DatabasePlayerRedis,
+                AlkaidRedis, LettuceRedis,
+                CommandHelper,
+                JavaScript,
+                Ptc, PtcObject,
+                AfyBroker
             )
             install(
-                EXPANSION_COMMAND_HELPER,
-                EXPANSION_PLAYER_DATABASE,
-                EXPANSION_REDIS, EXPANSION_LETTUCE_REDIS,
-                EXPANSION_JAVASCRIPT,
-                EXPANSION_GEEK_TOOL,
-                EXPANSION_PLAYER_FAKE_OP,
-                EXPANSION_PTC, EXPANSION_PTC_OBJECT,
-                EXPANSION_SUBMIT_CHAIN
+                Bukkit,
+                BukkitUI,
+                BukkitNMS, BukkitNMSUtil, BukkitNMSDataSerializer, BukkitNMSEntityAI, BukkitNMSItemTag,
+                BukkitHook,
+                BukkitFakeOp,
+                BukkitNavigation,
+                XSeries
             )
-            install(BUKKIT_ALL, UI, NMS, NMS_UTIL)
-            install(BUNGEE, PORTICUS)
-            install(VELOCITY)
+            install(BungeeCord, Porticus)
+            install(Velocity)
         }
         version {
             taboolib = taboolib_version
@@ -81,6 +84,8 @@ subprojects {
         classifier = null
         // asm
         relocate("org.objectweb.asm.", "org.objectweb.asm9.")
+        // jar-relocator
+//        relocate("me.lucko.jarrelocator.", "me.lucko.jarrelocator15.")
         // 第三方库
         relocate("ink.ptms.um", "ink.ptms.artifex.library.um")
         relocate("io.github.lukehutch", "ink.ptms.artifex.library")

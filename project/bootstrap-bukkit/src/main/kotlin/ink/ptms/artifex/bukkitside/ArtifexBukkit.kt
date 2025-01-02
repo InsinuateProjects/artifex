@@ -9,8 +9,9 @@ import taboolib.common.platform.*
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.releaseResourceFile
 import taboolib.library.reflex.Reflex.Companion.getProperty
-import taboolib.module.nms.MinecraftRemapper
 import taboolib.module.nms.MinecraftVersion
+import taboolib.module.nms.remap.RemapTranslation
+import taboolib.module.nms.remap.RemapTranslationLegacy
 import java.io.File
 
 /**
@@ -52,16 +53,30 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
         // 初始化 net.minecraft.server 支持
         ArtifexMinecraftJars.init()
         // 注册 nms remapper
-        Artifex.api().getScriptCompiler().setRemapper(object : MinecraftRemapper() {
+        // 新版转换器
+        if (MinecraftVersion.isUniversalCraftBukkit) {
+            Artifex.api().getScriptCompiler().setRemapper(object : RemapTranslation() {
 
-            override fun mapType(internalName: String): String {
-                return super.mapType(ScriptRemapper.translate(internalName))
-            }
+                override fun mapType(internalName: String): String {
+                    return super.mapType(ScriptRemapper.translate(internalName))
+                }
 
-            override fun map(internalName: String): String {
-                return super.map(ScriptRemapper.translate(internalName))
-            }
-        })
+                override fun map(internalName: String): String {
+                    return super.map(ScriptRemapper.translate(internalName))
+                }
+            })
+        } else {
+            Artifex.api().getScriptCompiler().setRemapper(object : RemapTranslationLegacy() {
+
+                override fun mapType(internalName: String): String {
+                    return super.mapType(ScriptRemapper.translate(internalName))
+                }
+
+                override fun map(internalName: String): String {
+                    return super.map(ScriptRemapper.translate(internalName))
+                }
+            })
+        }
     }
 
     override fun onActive() {
@@ -71,5 +86,6 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
                 Bukkit.getPluginManager().plugins.forEach { plugin -> accessSelf.add(plugin.name) }
             }
         }
+
     }
 }

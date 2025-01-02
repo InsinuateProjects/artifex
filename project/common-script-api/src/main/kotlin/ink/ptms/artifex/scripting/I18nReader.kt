@@ -50,13 +50,13 @@ class I18nReader(files: Map<String, ByteArray>, val info: ScriptProject, val nam
                 migrateFile(missingKeys, configuration, file)
             }
             nodes += exists
-            fileMap[node] = LanguageFile(file, nodes).also {
+            fileMap[node] = LanguageFile(file, nodes).also { lFile ->
                 // 文件变动监听
                 if (fileWatcher) {
                     FileWatcher.INSTANCE.addSimpleListener(file) {
-                        it.nodes.clear()
-                        loadNodes(configuration, it.nodes, node)
-                        loadNodes(Configuration.loadFromFile(file), it.nodes, node)
+                        lFile.nodes.clear()
+                        loadNodes(configuration, lFile.nodes, node)
+                        loadNodes(Configuration.loadFromFile(file), lFile.nodes, node)
                     }
                 }
             }
