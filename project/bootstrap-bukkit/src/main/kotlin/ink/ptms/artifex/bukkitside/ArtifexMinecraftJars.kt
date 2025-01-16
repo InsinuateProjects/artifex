@@ -38,15 +38,12 @@ internal object ArtifexMinecraftJars {
      * 下载 net.minecraft.server 文件
      */
     fun download() {
+        if (!MinecraftVersion.isSupported) {
+            return error("Unsupported minecraft version")
+        }
         if (MinecraftVersion.isUniversal) {
             // 下载每个大版本的服务端文件
-            val ver = when (MinecraftVersion.major) {
-                9 -> 11701
-                10 -> 11802
-                11 -> 11904
-                12 -> 12001
-                else -> error("Unsupported minecraft version")
-            }
+            val ver = MinecraftVersion.versionId
             val file = File(getDataFolder(), "runtime/minecraft-server-$ver.jar")
             if (file.exists() && file.length() > 0) {
                 return

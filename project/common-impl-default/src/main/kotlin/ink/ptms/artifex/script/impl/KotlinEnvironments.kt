@@ -3,6 +3,7 @@ package ink.ptms.artifex.script.impl
 import taboolib.common.PrimitiveIO
 import taboolib.common.PrimitiveSettings
 import taboolib.common.env.*
+import taboolib.common.env.aether.AetherResolver
 import taboolib.common.env.legacy.Dependency
 import taboolib.common.env.legacy.DependencyDownloader
 import taboolib.common.env.legacy.Repository
@@ -11,7 +12,46 @@ import taboolib.common.platform.function.getDataFolder
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
+import java.util.function.Consumer
 
+@RuntimeDependencies(
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-main-kts:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-script-runtime:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-scripting-common:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-scripting-jvm:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-scripting-jvm-host:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.8.20",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.intellij.deps:trove4j:1.0.20181211",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+    RuntimeDependency(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2",
+        repository = "https://maven.aliyun.com/repository/central"
+    ),
+)
 object KotlinEnvironments {
 
     /**
@@ -39,7 +79,7 @@ object KotlinEnvironments {
     private val relocation = listOf(JarRelocation("kotlin", "kotlin${kotlinVersion.replace(".", "")}"))
 
     fun loadDependencies() {
-        loadDependencies("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion", repository)
+        /*loadDependencies("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-script-runtime:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion", repository)
@@ -47,7 +87,7 @@ object KotlinEnvironments {
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.intellij.deps:trove4j:1.0.20181211", repository)
-        loadDependencies("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2", repository)
+        loadDependencies("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2", repository)*/
         // 需要补 common-reflex
         loadDependencies(
             "io.izzel.taboolib:common-reflex:${PrimitiveSettings.TABOOLIB_VERSION}",
@@ -83,6 +123,24 @@ object KotlinEnvironments {
             Dependency(args[0], args[1], args[2], if (impl) DependencyScope.RUNTIME else DependencyScope.PROVIDED)
         )
     }
+
+    /*fun loadDependencies(
+        source: String,
+        repository: String,
+        dir: File = baseDir,
+        impl: Boolean = true
+    ) {
+
+        val scope = if (impl) DependencyScope.RUNTIME else DependencyScope.PROVIDED
+        AetherResolver.of(repository).resolve(source, listOf(scope), true, true)
+            .forEach(Consumer { file: File? ->
+                try {
+                    AetherResolver.inject(file!!, relocation, !impl)
+                } catch (ex: Throwable) {
+                    ex.printStackTrace()
+                }
+            })
+    }*/
 
     fun getFiles(file: File): List<File> {
         return when {

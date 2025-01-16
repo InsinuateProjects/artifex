@@ -70,6 +70,7 @@ subprojects {
             )
             install(BungeeCord, Porticus)
             install(Velocity)
+//            install(App)
         }
         version {
             taboolib = taboolib_version

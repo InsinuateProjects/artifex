@@ -31,7 +31,7 @@ dependencies {
     // 第三方库
     taboo("ink.ptms:um:1.0.0-beta-29")
     taboo("io.github:fast-classpath-scanner:3.1.13")
-    taboo("me.lucko:jar-relocator:1.5")
+//    taboo("me.lucko:jar-relocator:1.5")
 }
 
 tasks {
@@ -55,6 +55,9 @@ tasks {
 //    }
 
     jar {
+        /*manifest {
+            attributes["Main-Class"] = "ink.ptms.artifex.appside.Main"
+        }*/
         // 打包子项目源代码
         rootProject.subprojects
             .filter {

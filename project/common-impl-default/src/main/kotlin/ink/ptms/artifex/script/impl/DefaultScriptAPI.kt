@@ -7,6 +7,7 @@ import ink.ptms.artifex.script.*
 import me.lucko.jarrelocator.JarRelocator
 import me.lucko.jarrelocator.Relocation
 import taboolib.common.LifeCycle
+import taboolib.common.env.RuntimeDependency
 import taboolib.common.io.digest
 import taboolib.common.io.newFile
 import taboolib.common.io.taboolibId
@@ -31,6 +32,11 @@ import java.util.concurrent.Executors
  * @author 坏黑
  * @since 2022/5/16 00:41
  */
+@RuntimeDependency(
+    "!me.lucko:jar-relocator:1.5",
+    test = "me.lucko.jarrelocator.Relocation",
+    repository = "https://maven.aliyun.com/repository/central",
+)
 @SkipTo(LifeCycle.INIT)
 object DefaultScriptAPI : ArtifexAPI {
 
