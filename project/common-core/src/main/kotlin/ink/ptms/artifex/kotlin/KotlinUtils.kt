@@ -15,8 +15,11 @@ import kotlin.script.experimental.util.PropertiesCollection
 
 val ScriptCompilationConfigurationKeys.artifexProperties by PropertiesCollection.key<Map<String, Any>>()
 
-val scriptsFile: File
-    get() = Artifex.api().getScriptHelper().baseScriptFolder()
+val scriptsFile: List<File>
+    get() = Artifex.api().getScriptHelper().baseScriptFolders()
+
+val buildFile: File
+    get() = Artifex.api().getScriptHelper().buildFolder()
 
 fun File.isKts(include: String): Boolean {
     return (name == include && extension == "kts") || name == "$include.kts"

@@ -31,7 +31,9 @@ abstract class ScriptFileReader {
      * @param name 脚本名称
      */
     open fun getScriptFile(name: String): File {
-        return scriptsFile.searchFile { isKts(name) }.firstOrNull() ?: File(scriptsFile, "$name.kts")
+        return scriptsFile.flatMap { it.searchFile { isKts(name) } }.firstOrNull()
+            ?: scriptsFile.flatMap { it.listFiles()?.asSequence() ?: emptySequence() }.find { it.name == name }
+            ?: File(scriptsFile[0], "$name.kts")
     }
 
     /**

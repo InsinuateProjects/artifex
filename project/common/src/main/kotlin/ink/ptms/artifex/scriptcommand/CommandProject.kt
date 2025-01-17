@@ -10,7 +10,6 @@ import taboolib.common.platform.Platform
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.CommandHeader
-import taboolib.common.platform.command.decimal
 import taboolib.common.platform.command.subCommand
 import taboolib.common.platform.function.submitAsync
 import taboolib.common5.Demand
@@ -187,7 +186,7 @@ object CommandProject {
             val artifact = project.buildToArtifact(sender, source = demand.tags.contains("S"))
             val consume = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time)
             if (artifact.isSuccessful()) {
-                val baseFolder = Artifex.api().getScriptHelper().baseScriptFolder()
+                val baseFolder = Artifex.api().getScriptHelper().baseScriptFolders()[0]
                 newFile(baseFolder, ".artifact/project-${project.name().lowercase()}.zip").writeBytes(artifact.toByteArray())
                 sender.sendLang("command-project-build-successful", consume)
             } else {
@@ -230,7 +229,7 @@ object CommandProject {
             }
             val consume = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time)
             if (artifact.isSuccessful()) {
-                val baseFolder = Artifex.api().getScriptHelper().baseScriptFolder()
+                val baseFolder = Artifex.api().getScriptHelper().baseScriptFolders()[0]
                 newFile(baseFolder, ".artifact/${project.name()}.jar").writeBytes(artifact.toByteArray())
                 sender.sendLang("command-project-build-successful", consume)
             } else {

@@ -25,7 +25,7 @@ interface ScriptHelper {
     /**
      * 脚本根目录
      */
-    fun baseScriptFolder(): File
+    fun baseScriptFolders(): List<File>
 
     /**
      * 脚本编译目录

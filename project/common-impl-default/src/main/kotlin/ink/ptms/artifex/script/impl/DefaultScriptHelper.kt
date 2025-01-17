@@ -22,12 +22,14 @@ class DefaultScriptHelper : ScriptHelper {
     val simpleCompiler = DefaultScriptSimpleCompiler()
     val simpleEvaluator = DefaultScriptSimpleEvaluator()
 
-    val baseScriptFolder by unsafeLazy {
-        if (DefaultScriptAPI.scriptFolder.isNullOrBlank()) newFolder(getDataFolder(), "scripts") else newFolder(DefaultScriptAPI.scriptFolder!!)
+    val baseScriptFolders by unsafeLazy {
+        val folders = mutableListOf(newFolder(getDataFolder(), "scripts"))
+        folders.addAll(DefaultScriptAPI.scriptFolders.map { newFolder(it) })
+        folders.toList()
     }
 
     val buildFolder by unsafeLazy {
-        newFolder(baseScriptFolder,".build/")
+        newFolder(DefaultScriptAPI.buildFolders ?: "${baseScriptFolders[0].name}/.build")
     }
 
     override fun getSimpleCompiler(): ScriptSimpleCompiler {
@@ -38,8 +40,8 @@ class DefaultScriptHelper : ScriptHelper {
         return simpleEvaluator
     }
 
-    override fun baseScriptFolder(): File {
-        return baseScriptFolder
+    override fun baseScriptFolders(): List<File> {
+        return baseScriptFolders
     }
 
     override fun buildFolder(): File {
@@ -86,7 +88,7 @@ class DefaultScriptHelper : ScriptHelper {
     }
 
     override fun getScriptFile(name: String): File? {
-        return getScriptFile(baseScriptFolder, name)
+        return baseScriptFolders.firstNotNullOfOrNull { getScriptFile(it, name) }
     }
 
     override fun getScriptFile(root: File, name: String): File? {
@@ -111,7 +113,8 @@ class DefaultScriptHelper : ScriptHelper {
     }
 
     override fun getScriptFiles(jar: Boolean): List<File> {
-        return getScriptFile(baseScriptFolder, jar).filterNot { File(it.parentFile, "project.yml").exists() }
+        return baseScriptFolders.flatMap { getScriptFile(it, jar) }
+            .filterNot { File(it.parentFile, "project.yml").exists() }
     }
 
     override fun getScriptFile(root: File, jar: Boolean): List<File> {

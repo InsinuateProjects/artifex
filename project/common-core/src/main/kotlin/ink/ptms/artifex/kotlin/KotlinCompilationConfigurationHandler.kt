@@ -61,7 +61,7 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
                 // 检查运行环境
                 if (Artifex.api().getScriptContainerManager().get(file.nameWithoutExtension.toClassIdentifier()) == null) {
                     // 检查构建文件
-                    val buildFile = File(scriptsFile, ".build/${file.nameWithoutExtension}.jar")
+                    val buildFile = File(buildFile, "${file.nameWithoutExtension}.jar")
                     if (buildFile.nonExists()) {
                         val compileReports = ArrayList<ScriptResult.Diagnostic>()
                         val compiled = Artifex.api().getScriptCompiler().compile { c ->
@@ -109,9 +109,9 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
         override fun getScriptFile(scriptPath: String?, file: String): Set<File> {
             return if (scriptPath != null) {
                 // 先从当前目录开始找，找不到再从根目录找
-                File(scriptPath).parentFile.searchFile { isKts(file) }.ifEmpty { scriptsFile.searchFile { isKts(file) } }
+                File(scriptPath).parentFile.searchFile { isKts(file) }.ifEmpty { scriptsFile.flatMap { it.searchFile { isKts(file) } }.toSet() }
             } else {
-                scriptsFile.searchFile { isKts(file) }
+                scriptsFile.flatMap { it.searchFile { isKts(file) } }.toSet()
             }
         }
     }

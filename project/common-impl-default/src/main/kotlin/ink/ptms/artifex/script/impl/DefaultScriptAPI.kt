@@ -52,7 +52,12 @@ object DefaultScriptAPI : ArtifexAPI {
     /**
      * 脚本文件夹
      */
-    val scriptFolder by resettableLazy { conf.getString("script-folder") }
+    val scriptFolders by resettableLazy { conf.getStringList("script-folders") }
+
+    /**
+     * 构建产物文件夹
+     */
+    val buildFolders by resettableLazy { conf.getString("script-build-folder") }
 
     /**
      * 预热语句

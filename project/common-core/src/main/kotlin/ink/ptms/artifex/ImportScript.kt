@@ -1,5 +1,6 @@
 package ink.ptms.artifex
 
+import ink.ptms.artifex.kotlin.buildFile
 import ink.ptms.artifex.kotlin.diagnosticFromKt
 import ink.ptms.artifex.kotlin.scriptsFile
 import ink.ptms.artifex.script.ScriptRuntimeProperty
@@ -32,7 +33,7 @@ class ImportScript(
         return synchronized(lock) {
             val container = Artifex.api().getScriptContainerManager().get(scriptClassFQName)
             if (container == null) {
-                invokeLibrary(File(scriptsFile, ".build/${scriptFile.nameWithoutExtension}.jar"))
+                invokeLibrary(File(buildFile, "${scriptFile.nameWithoutExtension}.jar"))
             } else {
                 ResultWithDiagnostics.Success(container.script().javaClass.kotlin)
             }

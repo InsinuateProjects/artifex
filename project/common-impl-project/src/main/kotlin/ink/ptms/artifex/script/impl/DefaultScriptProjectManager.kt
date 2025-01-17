@@ -68,7 +68,9 @@ object DefaultScriptProjectManager : ScriptProjectManager {
     }
 
     override fun getProjects(): List<ScriptProjectIdentifier> {
-        return getProjects(Artifex.api().getScriptHelper().baseScriptFolder())
+        return Artifex.api().getScriptHelper().baseScriptFolders().flatMap {
+            getProjects(it)
+        }
     }
 
     override fun toIdentifier(file: File): ScriptProjectIdentifier {
