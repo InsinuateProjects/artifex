@@ -7,6 +7,7 @@ import ink.ptms.artifex.script.*
 import me.lucko.jarrelocator.JarRelocator
 import me.lucko.jarrelocator.Relocation
 import taboolib.common.LifeCycle
+import taboolib.common.env.RuntimeDependencies
 import taboolib.common.env.RuntimeDependency
 import taboolib.common.io.digest
 import taboolib.common.io.newFile
@@ -32,10 +33,28 @@ import java.util.concurrent.Executors
  * @author 坏黑
  * @since 2022/5/16 00:41
  */
-@RuntimeDependency(
-    "!me.lucko:jar-relocator:1.5",
-    test = "me.lucko.jarrelocator.Relocation",
-    repository = "https://maven.aliyun.com/repository/central",
+@RuntimeDependencies(
+    RuntimeDependency(
+        "!me.lucko:jar-relocator:1.5",
+        test = "me.lucko.jarrelocator.Relocation",
+        repository = "https://maven.aliyun.com/repository/central",
+        relocate = arrayOf("!org.objectweb.asm.", "!org.objectweb.asm9.")
+    ),
+    /*RuntimeDependency(
+        "!org.ow2.asm:asm:9.6",
+        repository = "https://maven.aliyun.com/repository/central",
+        relocate = arrayOf("!org.objectweb.asm.", "!org.objectweb.asm9.")
+    ),
+    RuntimeDependency(
+        "!org.ow2.asm:asm-util:9.6",
+        repository = "https://maven.aliyun.com/repository/central",
+        relocate = arrayOf("!org.objectweb.asm.", "!org.objectweb.asm9.")
+    ),
+    RuntimeDependency(
+        "!org.ow2.asm:asm-commons:9.6",
+        repository = "https://maven.aliyun.com/repository/central",
+        relocate = arrayOf("!org.objectweb.asm.", "!org.objectweb.asm9.")
+    ),*/
 )
 @SkipTo(LifeCycle.INIT)
 object DefaultScriptAPI : ArtifexAPI {
@@ -174,10 +193,21 @@ object DefaultScriptAPI : ArtifexAPI {
         releaseResourceFile("runtime/script-api-bukkit.jar", true)
         releaseResourceFile("runtime/script-api-bungee.jar", true)
         releaseResourceFile("runtime/script-api-velocity.jar", true)
+        releaseResourceFile("runtime/core-reflex.jar", true)
         // 如果运行文件不存在
         if (File(getDataFolder(), "runtime/core.jar").nonExists()) {
             error("Runtime library not found")
         }
+        // 包含 asm 的 reflex
+
+        // 重定向 core 的 reflex
+        val coreJar = File(getDataFolder(), "runtime/core.jar")
+        val tempFile = coreJar.copyTo(newFile(getDataFolder(), ".temp/core.jar"), true)
+        val newFile = newFile(getDataFolder(), "runtime/core.jar")
+        // 恢复被重定向的 TabooLib 和 Kotlin
+        JarRelocator(tempFile, newFile, listOf(
+            Relocation("ink.ptms.artifex.$taboolibId.library.reflex", "$taboolibId.library.reflex"),
+        )).run()
         // 释放用于编译的插件本体
         try {
             releasePluginJar()
@@ -223,7 +253,7 @@ object DefaultScriptAPI : ArtifexAPI {
             val newFile = newFile(getDataFolder(), "runtime/plugin.jar")
             // 恢复被重定向的 TabooLib 和 Kotlin
             JarRelocator(tempFile, newFile, listOf(
-                    Relocation("kotlin1820", "kotlin"),
+                    Relocation("kotlin1822", "kotlin"),
                     Relocation("ink.ptms.artifex.$taboolibId", taboolibId),
             )).run()
         }

@@ -2,9 +2,21 @@ package ink.ptms.artifex.script.impl
 
 import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.script.*
+import ink.ptms.artifex.script.event.ScriptProjectReleasedEvent
+import ink.ptms.artifex.script.event.ScriptProjectReloadedEvent
+import ink.ptms.artifex.script.event.ScriptProjectStartedEvent
+import taboolib.common.PrimitiveSettings
+import taboolib.common.env.DependencyScope
+import taboolib.common.env.legacy.Dependency
+import taboolib.common.env.legacy.DependencyDownloader
+import taboolib.common.env.legacy.Repository
+import taboolib.common.io.newFile
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.getDataFolder
+import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
 import taboolib.module.lang.sendLang
+import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.ArrayList
@@ -26,8 +38,33 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
     val main: List<String>
         get() = identifier.root().getStringList("main")
 
+    val repositories: List<String>
+        get() = identifier.root().getStringList("repositories")
+
+    val dependencies: List<String>
+        get() = identifier.root().getStringList("dependencies")
+
     val autoMount: Boolean
         get() = identifier.root().getBoolean("auto-mount")
+
+    // TODO 需要变动框架才能支持脚本项目依赖加载
+    /*private val scriptLibraries = newFile(Artifex.api().getScriptHelper().buildFolder(), "libraries", folder = true)
+
+    private val runtimeProperty get() = ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
+        // 根据配置文件中的依赖添加
+        val depends = dependencies.map {
+            val args = it.split(":")
+            val groupId = args[0]
+            val artifactId = args[1]
+            val version = args[2]
+            Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
+        }
+        val downloader = DependencyDownloader(scriptLibraries)
+        val repos = mutableListOf(Repository(PrimitiveSettings.REPO_CENTRAL)).apply {
+            addAll(repositories.map { repo -> Repository(repo) })
+        }
+        defaultClasspath.addAll(downloader.loadDependency(repos, depends).map { it.findFile(scriptLibraries, "jar") })
+    }*/
 
     /**
      * 检查脚本是否可以启动
@@ -70,6 +107,7 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
 
     override fun run(sender: ProxyCommandSender, forceCompile: Boolean, logging: Boolean): Boolean {
         if (checkScripts(sender)) {
+            // TODO ScriptProjectStartEvent
             if (logging) {
                 sender.sendLang("project-start", name())
             }
@@ -80,16 +118,27 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
             if (Artifex.api().getScriptProjectManager().getRunningProject(name()) == null) {
                 Artifex.api().getScriptProjectManager().applyProject(this)
             }
+//            val property = runtimeProperty
+//            scripts.forEach { runScript(it, sender, property) }
             scripts.forEach { runScript(it, sender) }
             if (logging) {
                 sender.sendLang("command-project-started", name())
             }
+            val event = ScriptProjectStartedEvent(
+                this,
+                sender,
+                scripts,
+                logging,
+                forceCompile
+            )
+            Artifex.api().getScriptEventBus().call(event)
             return true
         }
         return false
     }
 
     override fun reload(sender: ProxyCommandSender, forceCompile: Boolean, logging: Boolean): Boolean {
+        // TODO ScriptProjectReloadEvent
         if (logging) {
             sender.sendLang("project-reload", name())
         }
@@ -98,14 +147,25 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
             return false // 若未成功编译则不会继续执行
         }
         releaseAll(sender, false)
+//            val property = runtimeProperty
+//            scripts.forEach { runScript(it, sender, property) }
         scripts.forEach { runScript(it, sender) }
         if (logging) {
             sender.sendLang("command-project-reloaded", name())
         }
+        val event = ScriptProjectReloadedEvent(
+            this,
+            sender,
+            scripts,
+            logging,
+            forceCompile
+        )
+        Artifex.api().getScriptEventBus().call(event)
         return true
     }
 
     override fun release(sender: ProxyCommandSender, logging: Boolean) {
+        // TODO ScriptProjectReleaseEvent
         if (logging) {
             sender.sendLang("project-release", name())
         }
@@ -114,6 +174,12 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         if (logging) {
             sender.sendLang("command-project-released", name())
         }
+        val event = ScriptProjectReleasedEvent(
+            this,
+            sender,
+            logging
+        )
+        Artifex.api().getScriptEventBus().call(event)
     }
 
     override fun isRunning(): Boolean {
@@ -144,6 +210,8 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         val data = Artifex.api().getScriptContainerManager().getExchangeData(runningId)
         // 项目数据
         data["@Project"] = this
+        // 先加载依赖
+
         // 运行脚本
         Artifex.api().getScriptHelper().getSimpleEvaluator().prepareEvaluation(scriptMeta, sender, loggingRunning = false)
             .loggingMounted(false)

@@ -1,4 +1,5 @@
 import io.izzel.taboolib.gradle.*
+import javaslang.collection.LinkedHashSet
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.commons.ClassRemapper
@@ -19,15 +20,15 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.ow2.asm:asm:9.2")
-        classpath("org.ow2.asm:asm-commons:9.2")
+        classpath("org.ow2.asm:asm:9.6")
+        classpath("org.ow2.asm:asm-commons:9.6")
     }
 }
 
 plugins {
     id("org.gradle.java")
     id("org.gradle.maven-publish")
-    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
     id("io.izzel.taboolib") version "2.0.22"
 }
@@ -99,7 +100,7 @@ subprojects {
             }
             doLast {
                 // 配置
-                val relocations = taboolib.relocation
+                val relocations = taboolib.relocation.toMutableMap()
                 val mapping = relocations.mapKeys { it.key.replace('.', '/') }.mapValues { it.value.replace('.', '/') }
                 val remapper = RelocateRemapper(relocations, mapping)
 

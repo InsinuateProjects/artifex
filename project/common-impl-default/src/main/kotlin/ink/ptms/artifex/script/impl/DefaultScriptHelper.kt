@@ -6,6 +6,7 @@ import taboolib.common.io.digest
 import taboolib.common.io.newFolder
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.platform.function.releaseResourceFile
 import taboolib.common.util.unsafeLazy
 import taboolib.module.lang.sendLang
 import java.io.File
@@ -26,6 +27,12 @@ class DefaultScriptHelper : ScriptHelper {
         val folders = mutableListOf(newFolder(getDataFolder(), "scripts"))
         folders.addAll(DefaultScriptAPI.scriptFolders.map { newFolder(it) })
         folders.toList()
+    }
+
+    val skipRebuildSignFile = File(getDataFolder(), "_skip_rebuild.kts").apply {
+        if (!exists()) {
+            releaseResourceFile("_skip_rebuild.kts", false)
+        }
     }
 
     val buildFolder by unsafeLazy {
@@ -51,6 +58,10 @@ class DefaultScriptHelper : ScriptHelper {
     override fun getScriptImplementations(container: ScriptContainer): List<ScriptContainer> {
         return Artifex.api().getScriptContainerManager().getAll()
             .filter { it.script().baseScript().otherImportScripts().contains(container.id()) }
+    }
+
+    override fun getFixedScriptVersion(): String {
+        return skipRebuildSignFile.digest()
     }
 
     override fun getScriptVersion(script: ScriptSource, providedProperties: Map<String, Any>): String {

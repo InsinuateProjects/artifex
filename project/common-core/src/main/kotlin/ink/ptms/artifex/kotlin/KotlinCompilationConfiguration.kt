@@ -37,7 +37,7 @@ class KotlinCompilationConfiguration(val props: ScriptRuntimeProperty) : ScriptC
             // This may cause difficult to debug problems if there's a different version of the Kotlin Runtime library in the classpath.
             // Consider removing these libraries from the classpath
             // Library has Kotlin runtime bundled into it
-            // compilerOptions("-Xskip-runtime-version-check") >> 1.8.20 失效
+            // compilerOptions("-Xskip-runtime-version-check") >> 1.8.22 失效
             // compilerOptions("-Xskip-metadata-version-check")
             // compilerOptions("-Xjvm-default=all")
         }

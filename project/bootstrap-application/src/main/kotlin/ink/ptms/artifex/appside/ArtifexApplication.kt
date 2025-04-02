@@ -19,39 +19,16 @@ import kotlin.jvm.optionals.getOrNull
  */
 @RuntimeDependencies(
     RuntimeDependency(
-        "!org.ow2.asm:asm:9.6",
-        repository = "https://maven.aliyun.com/repository/central",
-//        relocate = arrayOf("org.objectweb.asm.:org.objectweb.asm9.")
-    ),
-    RuntimeDependency(
-        "!org.ow2.asm:asm-util:9.6",
-        repository = "https://maven.aliyun.com/repository/central",
-//        relocate = arrayOf("org.objectweb.asm.:org.objectweb.asm9.")
-    ),
-    RuntimeDependency(
-        "!org.ow2.asm:asm-commons:9.6",
-        repository = "https://maven.aliyun.com/repository/central",
-//        relocate = arrayOf("org.objectweb.asm.:org.objectweb.asm9.")
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-reflect:1.8.20",
+        "!org.jetbrains.kotlin:kotlin-reflect:1.8.22",
         repository = "https://maven.aliyun.com/repository/central",
     ),
     RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-stdlib:1.8.20",
+        "!org.jetbrains.kotlin:kotlin-stdlib:1.8.22",
         repository = "https://maven.aliyun.com/repository/central",
     ),
 )
 @PlatformSide(Platform.APPLICATION)
 object ArtifexApplication : Plugin(), PlatformHelper {
-
-    val plugin by unsafeLazy { VelocityPlugin.getInstance() }
-
-    @Awake(LifeCycle.INIT)
-    fun init() {
-        releaseResourceFile("runtime/velocity-api.jar", false)
-        releaseResourceFile("runtime/adventure-api.jar", false)
-    }
 
     override fun onLoad() {
         PlatformFactory.awokenMap["ink.ptms.artifex.PlatformHelper"] = this

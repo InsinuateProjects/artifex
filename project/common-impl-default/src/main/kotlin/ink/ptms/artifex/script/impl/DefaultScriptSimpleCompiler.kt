@@ -3,6 +3,7 @@ package ink.ptms.artifex.script.impl
 import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.script.*
 import ink.ptms.artifex.script.event.ScriptCompileCheckEvent
+import taboolib.common.io.digest
 import taboolib.common.io.newFile
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.module.lang.sendLang
@@ -118,7 +119,8 @@ class DefaultScriptSimpleCompiler : ScriptSimpleCompiler {
             if (version != null) {
                 // 获取当前脚本文件版本
                 val currentVersion = helper.getScriptVersion(Artifex.api().getScriptCompiler().toScriptSource(file), providedProperties)
-                if (currentVersion != version) {
+                // 特定文本内容的脚本将跳过编译
+                if (file.digest() != helper.getFixedScriptVersion() && currentVersion != version) {
                     if (logging) {
                         sender.sendLang("command-script-recompiled", version, currentVersion)
                     }

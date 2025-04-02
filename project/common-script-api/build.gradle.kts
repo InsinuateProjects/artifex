@@ -19,7 +19,7 @@ dependencies {
 //            include(project(":project:common-script-api-bukkit"))
 //            include(project(":project:common-script-api-bungee"))
 //        }
-//        relocate("kotlin1820", "kotlin")
+//        relocate("kotlin1822", "kotlin")
 //    }
 //    build {
 //        dependsOn(shadowJar)

@@ -31,7 +31,7 @@ open class ScriptRemapper : Remapper() {
         fun translate(key: String): String {
             val r = when {
                 // 替换 Kotlin 的函数类型，以确保正确调用 TabooLib 方法
-                key.startsWith("$kotlinId/jvm/functions/Function") -> key.replace("$kotlinId/", "kotlin1820/")
+                key.startsWith("$kotlinId/jvm/functions/Function") -> key.replace("$kotlinId/", "kotlin1822/")
                 // 替换 TabooLib 包
                 key.startsWith("$taboolibId/") -> key.replace("$taboolibId/", "ink/ptms/artifex/$taboolibId/")
                 else -> key

@@ -42,7 +42,7 @@ tasks {
 //        exclude("META-INF/tf/**")
 //        exclude("module-info.java")
 //        // 重定向 kotlin
-//        relocate("kotlin.", "kotlin1820.") {
+//        relocate("kotlin.", "kotlin1822.") {
 //            exclude("kotlin.Metadata")
 //        }
 //        // 重定向 TabooLib
@@ -55,10 +55,10 @@ tasks {
 //    }
 
     jar {
-        /*manifest {
+        manifest {
             attributes["Main-Class"] = "ink.ptms.artifex.appside.Main"
-        }*/
-        // 打包子项目源代码
+        }
+        // 打包相关子项目源代码
         rootProject.subprojects
             .filter {
                 !it.name.startsWith("jar-")
@@ -94,11 +94,12 @@ tasks {
                         new.closeEntry()
                     }
 
-                    // 因为 TabooLib 运行在 relocated 后的 Kotlin 环境中 (kotlin1820)
+                    // 因为 TabooLib 运行在 relocated 后的 Kotlin 环境中 (kotlin1822)
                     // 因此需要给脚本提供未经重定向的 jar 文件来进行编译
 
                     // 运行环境及标准库
                     applyToZip(new, version, "runtime/core", "common-core")
+                    applyToZip(new, version, "runtime/core-reflex", "common-core-reflex")
                     applyToZip(new, version, "runtime/script-api", "common-script-api")
                     applyToZip(new, version, "runtime/script-api-bukkit", "common-script-api-bukkit")
                     applyToZip(new, version, "runtime/script-api-bungee", "common-script-api-bungee")

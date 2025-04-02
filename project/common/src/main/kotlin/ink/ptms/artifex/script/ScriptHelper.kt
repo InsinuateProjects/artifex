@@ -38,6 +38,15 @@ interface ScriptHelper {
     fun getScriptImplementations(container: ScriptContainer): List<ScriptContainer>
 
     /**
+     * 获取用于跳过编译的固定版本（哈希值）
+     * TODO 需要更好的方案替代
+     *
+     * @param script 脚本源
+     * @param providedProperties 编译参数
+     */
+    fun getFixedScriptVersion(): String
+
+    /**
      * 获取脚本源代码版本（哈希值）
      *
      * @param script 脚本源

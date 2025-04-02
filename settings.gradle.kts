@@ -23,3 +23,6 @@ include("project:jar-proxy-bukkit")
 include("project:jar-proxy-bungee")
 include("project:jar-proxy-velocity")
 //include("project:jar-proxy-application")
+
+// 经过处理的 reflex
+include("project:common-core-reflex")

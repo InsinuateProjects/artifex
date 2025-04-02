@@ -6,7 +6,7 @@ taboolib {
 }
 
 dependencies {
-    val kotlinVersion = "1.8.20"
+    val kotlinVersion = "1.8.22"
     api(project(":project:common"))
     api("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion")
     api("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion")
@@ -22,7 +22,7 @@ dependencies {
 //        archiveClassifier.set("")
 //        relocate("taboolib", "ink.ptms.artifex.taboolib")
 ////        dependencies {
-////            val kotlinVersion = "1.8.20"
+////            val kotlinVersion = "1.8.22"
 ////            include(dependency("org.jetbrains.intellij.deps:trove4j:1.0.20181211"))
 ////            include(dependency("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"))
 ////            include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"))
