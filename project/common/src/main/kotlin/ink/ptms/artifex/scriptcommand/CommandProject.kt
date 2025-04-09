@@ -53,11 +53,11 @@ object CommandProject {
             dynamic("args") {
                 execute<ProxyCommandSender> { sender, context, argument ->
                     val demand = Demand("0 $argument")
-                    val project = projectManager.getProject(context.argument(-1))
+                    val project = projectManager.getProject(context["project"])
                     if (project != null) {
                         submitAsync { project.load().run(sender, forceCompile = demand.tags.contains("C")) }
                     } else {
-                        sender.sendLang("command-project-not-found", context.argument(-1))
+                        sender.sendLang("command-project-not-found", context["project"])
                     }
                 }
             }
@@ -100,11 +100,11 @@ object CommandProject {
             dynamic("args") {
                 execute<ProxyCommandSender> { sender, context, argument ->
                     val demand = Demand("0 $argument")
-                    val project = projectManager.getRunningProject(context.argument(-1))
+                    val project = projectManager.getRunningProject(context["project"])
                     if (project != null) {
                         submitAsync { project.reload(sender, forceCompile = demand.tags.contains("C")) }
                     } else {
-                        sender.sendLang("command-project-is-not-running", context.argument(-1))
+                        sender.sendLang("command-project-is-not-running", context["project"])
                     }
                 }
             }
@@ -152,11 +152,11 @@ object CommandProject {
                 dynamic("args") {
                     execute<ProxyCommandSender> { sender, context, argument ->
                         val demand = Demand("0 $argument")
-                        val project = projectManager.getProject(context.argument(-1))
+                        val project = projectManager.getProject(context["project"])
                         if (project is ScriptProjectIdentifier.DevIdentifier) {
                             buildToZip(project, sender, demand)
                         } else {
-                            sender.sendLang("command-project-not-found-or-not-dev", context.argument(-1))
+                            sender.sendLang("command-project-not-found-or-not-dev", context["project"])
                         }
                     }
                 }
@@ -168,11 +168,11 @@ object CommandProject {
                 dynamic("args") {
                     execute<ProxyCommandSender> { sender, context, argument ->
                         val demand = Demand("0 $argument")
-                        val project = projectManager.getProject(context.argument(-1))
+                        val project = projectManager.getProject(context["project"])
                         if (project is ScriptProjectIdentifier.DevIdentifier) {
                             buildToPlugin(project, sender, demand)
                         } else {
-                            sender.sendLang("command-project-not-found-or-not-dev", context.argument(-1))
+                            sender.sendLang("command-project-not-found-or-not-dev", context["project"])
                         }
                     }
                 }

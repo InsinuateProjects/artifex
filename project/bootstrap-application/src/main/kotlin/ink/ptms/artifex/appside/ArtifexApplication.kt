@@ -2,13 +2,11 @@ package ink.ptms.artifex.appside
 
 import ink.ptms.artifex.PlatformHelper
 import taboolib.common.LifeCycle
-import taboolib.common.env.RuntimeDependencies
-import taboolib.common.env.RuntimeDependency
 import taboolib.common.platform.*
-import taboolib.common.platform.function.releaseResourceFile
-import taboolib.common.util.unsafeLazy
-import taboolib.platform.VelocityPlugin
-import kotlin.jvm.optionals.getOrNull
+import taboolib.common.platform.service.PlatformIO
+import taboolib.library.reflex.Reflex.Companion.setProperty
+import taboolib.platform.AppConsole
+import taboolib.platform.AppIO
 
 /**
  * Artifex
@@ -17,21 +15,23 @@ import kotlin.jvm.optionals.getOrNull
  * @author scorez
  * @since 4/21/24 13:43.
  */
-@RuntimeDependencies(
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-reflect:1.8.22",
-        repository = "https://maven.aliyun.com/repository/central",
-    ),
-    RuntimeDependency(
-        "!org.jetbrains.kotlin:kotlin-stdlib:1.8.22",
-        repository = "https://maven.aliyun.com/repository/central",
-    ),
-)
 @PlatformSide(Platform.APPLICATION)
 object ArtifexApplication : Plugin(), PlatformHelper {
 
-    override fun onLoad() {
+    @Awake(LifeCycle.INIT)
+    fun init() {
+        val adapter = AppAdapter()
+        val adapterKey = PlatformFactory.serviceMap.keys.first { it.contains("PlatformAdapter") }
+        PlatformFactory.serviceMap[adapterKey] = adapter
+    }
+
+    @Awake(LifeCycle.LOAD)
+    fun load() {
         PlatformFactory.awokenMap["ink.ptms.artifex.PlatformHelper"] = this
+    }
+
+    @Awake(LifeCycle.ENABLE)
+    fun enable() {
     }
 
     override fun plugin(name: String): Any? {

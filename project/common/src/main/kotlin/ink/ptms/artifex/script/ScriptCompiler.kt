@@ -49,14 +49,19 @@ interface ScriptCompiler {
     fun toScriptSource(main: String, inputStream: InputStream): ScriptSource
 
     /**
-     * 设置 Remapper
+     * 添加 Remapper
      */
-    fun setRemapper(remapper: Remapper)
+    fun registerRemapper(key: String, remapper: Remapper)
 
     /**
-     * 获取当前 Remapper
+     * 获取 Remapper
      */
-    fun getRemapper(): Remapper
+    fun getRemapper(key: String = "default"): Remapper
+
+    /**
+     * 获取当前所有 Remapper
+     */
+    fun remappers(): Map<String, Remapper>
 
     /**
      * 脚本编译配置

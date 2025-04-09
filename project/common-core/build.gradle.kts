@@ -7,14 +7,14 @@ taboolib {
 
 dependencies {
     val kotlinVersion = "1.8.22"
-    api(project(":project:common"))
-    api("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion")
-    api("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion")
-    api("org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion")
-    api("org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion")
-    api("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion")
-    api("org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:$kotlinVersion")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+    compileOnly(project(":project:common"))
+    compileOnly("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:$kotlinVersion")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
 }
 
 //tasks {

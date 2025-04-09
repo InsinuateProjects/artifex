@@ -29,7 +29,7 @@ plugins {
     id("org.gradle.java")
     id("org.gradle.maven-publish")
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.izzel.taboolib") version "2.0.22"
 }
 
@@ -37,7 +37,7 @@ subprojects {
     apply(plugin = "io.izzel.taboolib")
     apply<JavaPlugin>()
     apply(plugin = "org.jetbrains.kotlin.jvm")
-//    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "com.github.johnrengelman.shadow")
 
     repositories {
         mavenLocal()
@@ -58,7 +58,6 @@ subprojects {
                 CommandHelper,
                 JavaScript,
                 Ptc, PtcObject,
-                AfyBroker
             )
             install(
                 Bukkit,
@@ -71,17 +70,10 @@ subprojects {
             )
             install(BungeeCord, Porticus)
             install(Velocity)
-//            install(App)
         }
         version {
             taboolib = taboolib_version
             coroutines = null
-        }
-        if (project.name != "plugin") {
-            exclude("plugin.yml")
-            exclude("bungee.yml")
-            exclude("velocity-plugin.json")
-            exclude("taboolib")
         }
         classifier = null
         // asm
@@ -94,7 +86,28 @@ subprojects {
     }
 
     tasks {
-        jar {
+        shadowJar {
+            dependsOn(taboolibMainTask)
+            if (!taboolib.isSubproject) {
+                enabled = false
+                return@shadowJar
+            }
+            /*dependencies {
+                exclude(dependency("*:*"))
+            }*/
+            dependsOn(jar)
+            from(jar)
+            archiveClassifier.set("relocated")
+            taboolib.relocation.forEach { (t, u) ->
+                relocate(t, u)
+            }
+        }
+        build {
+            if (taboolib.isSubproject) {
+                dependsOn(shadowJar)
+            }
+        }
+        /*jar {
             if (!project.taboolib.isSubproject) {
                 return@jar
             }
@@ -150,7 +163,7 @@ subprojects {
                 // api mode
 //                Files.copy(tempOut.toPath(), inJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
-        }
+        }*/
     }
 
     dependencies {
@@ -223,5 +236,8 @@ publishing {
 }
 
 gradle.buildFinished {
-    buildDir.deleteRecursively()
+    copy {
+        from(project(":plugin").layout.buildDirectory.dir("libs").get().asFile)
+        into(rootProject.layout.buildDirectory.dir("libs").get().asFile)
+    }
 }

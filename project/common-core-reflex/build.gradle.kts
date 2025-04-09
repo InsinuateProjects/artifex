@@ -1,7 +1,3 @@
-plugins {
-    id("com.github.johnrengelman.shadow")
-}
-
 taboolib {
     version {
         skipKotlinRelocate = true
@@ -25,15 +21,8 @@ tasks {
             include(dependency("org.ow2.asm:asm-util:9.6"))
             include(dependency("org.ow2.asm:asm-commons:9.6"))
         }
-        archiveClassifier.set("relocated")
+        relocators.clear()
 //        relocate("taboolib", "ink.ptms.artifex.taboolib")
         relocate("org.objectweb.asm.", "org.objectweb.asm9.")
     }
-    build {
-        dependsOn(shadowJar)
-    }
-}
-
-tasks.named("taboolibMainTask") {
-    dependsOn(tasks.named("shadowJar"))
 }

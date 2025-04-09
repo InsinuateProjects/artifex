@@ -26,7 +26,7 @@ import kotlin.script.experimental.host.StringScriptSource
  */
 object ArtScriptCompiler : ScriptCompiler {
 
-    private var remapper: Remapper = ScriptRemapper()
+    private var remappers = hashMapOf<String, Remapper>("default" to ScriptRemapper())
 
     override fun createCompilationPool(builder: Consumer<ScriptCompilationPool.Builder>): ScriptCompilationPool {
         return ArtScriptCompilationPool(BuilderImpl().also { builder.accept(it) })
@@ -61,12 +61,16 @@ object ArtScriptCompiler : ScriptCompiler {
         return toScriptSource(main, inputStream.readBytes().toString(StandardCharsets.UTF_8))
     }
 
-    override fun setRemapper(remapper: Remapper) {
-        this.remapper = remapper
+    override fun registerRemapper(key: String, remapper: Remapper) {
+        this.remappers[key] = remapper
     }
 
-    override fun getRemapper(): Remapper {
-        return remapper
+    override fun getRemapper(key: String): Remapper {
+        return this.remappers[key]!!
+    }
+
+    override fun remappers(): Map<String, Remapper> {
+        return remappers
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -77,12 +81,19 @@ object ArtScriptCompiler : ScriptCompiler {
             // 编译日志
             result.reports.forEach { compilerImpl.onReport?.accept(diagnosticFromKt(it)) }
             // 编译结果
-            val compiledScript = result.valueOrNull()?.remap()
+            var compiledScript = result.valueOrNull()
             if (compiledScript != null) {
                 // 获取编译文件
                 val compilerOutputFiles = compiledScript.compilerOutputFiles() as? MutableMap ?: error("Not mutable map")
                 // 获取编译数据
                 val properties = compiledScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties] ?: emptyMap()
+
+                // remappes 处理
+                compiledScript = when {
+                    properties["isImportMinecraftServer"] == true -> compiledScript.remap("taboolib")
+                    properties["isImportPaperServer"] == true -> compiledScript.remap("paper")
+                    else -> compiledScript.remap()
+                }
 
                 // 获取引用脚本
                 val importScripts = properties["importScript"] as? List<File> ?: error("Compilation property missing: importScript")

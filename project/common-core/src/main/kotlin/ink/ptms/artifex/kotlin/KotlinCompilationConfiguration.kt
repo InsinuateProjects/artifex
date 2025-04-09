@@ -19,7 +19,7 @@ class KotlinCompilationConfiguration(val props: ScriptRuntimeProperty) : ScriptC
         updateClasspath(classpath)
         updateClasspath(props.defaultClasspath)
         baseClass(ArtScript::class)
-        defaultImports(Art::class, Include::class, Import::class, ImportMinecraftServer::class, CompilerOptions::class)
+        defaultImports(Art::class, Include::class, Import::class, ImportMinecraftServer::class, ImportPaperServer::class, CompilerOptions::class)
         if (props.preheatMode) {
             println("[Artifex] Preheat classpath: ${classpath.size}")
         }
@@ -42,7 +42,7 @@ class KotlinCompilationConfiguration(val props: ScriptRuntimeProperty) : ScriptC
             // compilerOptions("-Xjvm-default=all")
         }
         refineConfiguration {
-            onAnnotations(Art::class, Include::class, Import::class, ImportMinecraftServer::class, CompilerOptions::class, handler = KotlinCompilationConfigurationHandler(props))
+            onAnnotations(Art::class, Include::class, Import::class, ImportMinecraftServer::class, ImportPaperServer::class, CompilerOptions::class, handler = KotlinCompilationConfigurationHandler(props))
         }
         ide {
             acceptedLocations(ScriptAcceptedLocation.Everywhere)

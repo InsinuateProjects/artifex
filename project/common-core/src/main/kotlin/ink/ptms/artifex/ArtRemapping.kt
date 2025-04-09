@@ -10,7 +10,7 @@ import org.objectweb.asm.commons.Remapper
 import kotlin.script.experimental.api.CompiledScript
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
 
-fun CompiledScript.remap(): CompiledScript {
+fun CompiledScript.remap(key: String = "default"): CompiledScript {
     if (this is KJvmCompiledScript) {
         runCatching {
             val compilerOutputFiles = (getCompiledModule() as KJvmCompiledModuleInMemoryImpl).compilerOutputFiles
@@ -18,7 +18,7 @@ fun CompiledScript.remap(): CompiledScript {
                 if (it.key.endsWith(".class")) {
                     val classReader = ClassReader(it.value)
                     val classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
-                    val classVisitor: ClassVisitor = ClassRemapper(classWriter, Artifex.api().getScriptCompiler().getRemapper())
+                    val classVisitor: ClassVisitor = ClassRemapper(classWriter, Artifex.api().getScriptCompiler().getRemapper(key))
                     classReader.accept(classVisitor, 0)
                     classWriter.toByteArray()
                 } else {

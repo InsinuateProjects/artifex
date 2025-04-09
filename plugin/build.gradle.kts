@@ -1,10 +1,16 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+import io.izzel.taboolib.gradle.App
 import java.util.zip.ZipOutputStream
 import java.io.FileOutputStream
 import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.zip.Deflater
 import java.util.zip.ZipFile
 
 plugins {
     java
+    id("com.github.johnrengelman.shadow")
 }
 
 taboolib {
@@ -28,6 +34,10 @@ dependencies {
 //    // 逻辑实现
 //    taboo(project(":project:common-impl-default"))
 //    taboo(project(":project:common-impl-project"))
+    // 所有模块应当已构建完成, 预先预热, 确保该模块在队列的末尾
+    rootProject.subprojects.filter { it.path.startsWith(":project:") }.forEach {
+        compileOnly(project(it.path))
+    }
     // 第三方库
     taboo("ink.ptms:um:1.0.0-beta-29")
     taboo("io.github:fast-classpath-scanner:3.1.13")
@@ -55,14 +65,12 @@ tasks {
 //    }
 
     jar {
-        manifest {
-            attributes["Main-Class"] = "ink.ptms.artifex.appside.Main"
-        }
         // 打包相关子项目源代码
         rootProject.subprojects
             .filter {
                 !it.name.startsWith("jar-")
                         && !it.name.startsWith("common-core")
+                        && !it.name.startsWith("bootstrap-application")
             }
             .forEach {
                 from(it.sourceSets["main"].output)
@@ -77,13 +85,81 @@ tasks {
         dependsOn(jar)
     }
 
+    processResources {
+        rootProject.subprojects.filter { it.path.startsWith(":project:") }.forEach {
+            dependsOn("${it.path}:shadowJar")
+            dependsOn("${it.path}:jar")
+        }
+        // 运行环境及标准库
+        intoZip(version, "runtime/core", "common-core")
+        intoZip(version, "runtime/core-reflex", "common-core-reflex")
+        intoZip(version, "runtime/script-api", "common-script-api")
+        intoZip(version, "runtime/script-api-bukkit", "common-script-api-bukkit")
+        intoZip(version, "runtime/script-api-bungee", "common-script-api-bungee")
+        intoZip(version, "runtime/script-api-velocity", "common-script-api-velocity")
+        // jar 代理
+        intoZip(version, "proxy/bukkit", "jar-proxy-bukkit")
+        intoZip(version, "proxy/bungee", "jar-proxy-bungee")
+        intoZip(version, "proxy/velocity", "jar-proxy-velocity")
+    }
+
+    register<ShadowJar>("pluginJar") {
+        rootProject.subprojects.filter { it.path.startsWith(":project:") }.forEach {
+            dependsOn("${it.path}:shadowJar")
+        }
+        dependsOn(taboolibMainTask)
+        dependencies {
+            exclude(dependency("*:*"))
+        }
+        from(jar)
+        archiveBaseName.set(rootProject.name)
+        archiveClassifier.set("")
+    }
+
+    register<ShadowJar>("appJar") {
+        dependsOn("pluginJar")
+        dependencies {
+            exclude(dependency("*:*"))
+        }
+        from(projectDir.resolve("build/libs/${rootProject.name}-$version.jar")) {
+            exclude("META-INF")
+        }
+        manifest {
+            attributes(mapOf(
+                "Main-Class" to "ink.ptms.artifex.appside.Main"
+            ))
+        }
+        archiveBaseName.set(rootProject.name)
+        archiveClassifier.set("app")
+        from(zipTree(rootProject.file("project/bootstrap-application/build/libs/bootstrap-application-$version.jar")))
+        transform(Log4j2PluginsCacheFileTransformer())
+        mergeServiceFiles()
+    }
+
+    register<ShadowJar>("sourceJar") {
+        archiveBaseName.set(rootProject.name)
+        archiveClassifier.set("api")
+        dependencies {
+            exclude(dependency("*:*"))
+        }
+        from(project(":project:common").sourceSets["main"].allSource)
+        from(project(":project:common-core").sourceSets["main"].allSource)
+        from(project(":project:common-impl-default").sourceSets["main"].allSource)
+        from(project(":project:common-impl-project").sourceSets["main"].allSource)
+        from(project(":project:common-script-api").sourceSets["main"].allSource)
+        from(project(":project:common-script-api-bukkit").sourceSets["main"].allSource)
+        from(project(":project:common-script-api-bungee").sourceSets["main"].allSource)
+        from(project(":project:common-script-api-velocity").sourceSets["main"].allSource)
+    }
+
     build {
-        doLast {
+        dependsOn("pluginJar", "appJar", "sourceJar")
+        /*doLast {
             val version = project.version
             val file = projectDir.resolve("build/libs/plugin-$version.jar")
-            val newFile = projectDir.resolve("build/libs/${rootProject.name}-$version.jar")
+            val pluginFile = projectDir.resolve("build/libs/${rootProject.name.lowercase()}-$version.jar")
             ZipFile(file).use { old ->
-                ZipOutputStream(FileOutputStream(newFile)).use { new ->
+                ZipOutputStream(FileOutputStream(pluginFile)).use { new ->
                     for (entry in old.entries()) {
                         runCatching {
                             new.putNextEntry(entry)
@@ -110,13 +186,48 @@ tasks {
                     applyToZip(new, version, "proxy/velocity", "jar-proxy-velocity")
                 }
             }
-//            file.delete()
-        }
+
+            // 用于独立运行的版本
+            val appFile = projectDir.resolve("build/libs/${rootProject.name.lowercase()}-app-$version.jar")
+            ZipFile(pluginFile).use { old ->
+                ZipOutputStream(FileOutputStream(appFile)).use { new ->
+                    applyToZipFully(new, version, false, "bootstrap-application")
+                    for (entry in old.entries()) {
+                        if (entry.name == "plugin.yml") continue
+                        if (entry.name == "bungee.yml") continue
+                        if (entry.name == "velocity-plugin.json") continue
+                        runCatching {
+                            new.putNextEntry(entry)
+                            if (!entry.isDirectory) {
+                                new.write(old.getInputStream(entry).readBytes())
+                            }
+                            new.closeEntry()
+                        }
+                    }
+                }
+            }
+
+            // 提供用于开发的未经重定向的版本
+            val newFile = projectDir.resolve("build/libs/${rootProject.name.lowercase()}-api-$version.jar")
+            ZipOutputStream(FileOutputStream(newFile)).use { new ->
+                applyToZipFully(new, version, true, "common")
+                applyToZipFully(new, version, true, "common-core")
+                applyToZipFully(new, version, true, "common-impl-default")
+                applyToZipFully(new, version, true, "common-impl-project")
+                applyToZipFully(new, version, true, "common-script-api")
+                applyToZipFully(new, version, true, "common-script-api-bukkit")
+                applyToZipFully(new, version, true, "common-script-api-bungee")
+                applyToZipFully(new, version, true, "common-script-api-velocity")
+            }
+        }*/
     }
 }
 
-fun applyToZip(new: ZipOutputStream, version: Any, name: String, module: String) {
-    new.putNextEntry(JarEntry("$name.jar"))
-    new.write(rootProject.file("project/$module/build/libs/$module-$version-relocated.jar").readBytes())
-    new.closeEntry()
+fun ProcessResources.intoZip(version: Any, name: String, module: String) {
+    val directory = name.substringBeforeLast('/')
+    val jarName = name.substringAfterLast('/')
+    from(rootProject.file("project/$module/build/libs/$module-$version-relocated.jar")) {
+        rename("$module-$version-relocated.jar", "$jarName.jar")
+        into(directory)
+    }
 }

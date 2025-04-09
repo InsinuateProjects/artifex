@@ -42,6 +42,7 @@ object KotlinEnvironments {
 //    private val relocation = listOf(JarRelocation("kotlin", "kotlin${kotlinVersion.replace(".", "")}"))
 
     fun loadDependencies() {
+        loadDependencies("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-script-runtime:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion", repository)

@@ -1,4 +1,4 @@
-rootProject.name = "Artifex"
+rootProject.name = "artifex"
 
 include("plugin")
 include("project:common")
@@ -17,7 +17,7 @@ include("project:common-script-api-velocity")
 include("project:bootstrap-bukkit")
 include("project:bootstrap-bungee")
 include("project:bootstrap-velocity")
-//include("project:bootstrap-application")
+include("project:bootstrap-application")
 // jar 代理
 include("project:jar-proxy-bukkit")
 include("project:jar-proxy-bungee")

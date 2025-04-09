@@ -55,28 +55,25 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
         // 注册 nms remapper
         // 新版转换器
         if (MinecraftVersion.isUniversalCraftBukkit) {
-            Artifex.api().getScriptCompiler().setRemapper(object : RemapTranslation() {
-
+            Artifex.api().getScriptCompiler().registerRemapper("taboolib", object : RemapTranslation() {
                 override fun mapType(internalName: String): String {
                     return super.mapType(ScriptRemapper.translate(internalName))
                 }
-
                 override fun map(internalName: String): String {
                     return super.map(ScriptRemapper.translate(internalName))
                 }
             })
         } else {
-            Artifex.api().getScriptCompiler().setRemapper(object : RemapTranslationLegacy() {
-
+            Artifex.api().getScriptCompiler().registerRemapper("taboolib", object : RemapTranslationLegacy() {
                 override fun mapType(internalName: String): String {
                     return super.mapType(ScriptRemapper.translate(internalName))
                 }
-
                 override fun map(internalName: String): String {
                     return super.map(ScriptRemapper.translate(internalName))
                 }
             })
         }
+        // TODO papermc 提供的 remapper
     }
 
     override fun onActive() {

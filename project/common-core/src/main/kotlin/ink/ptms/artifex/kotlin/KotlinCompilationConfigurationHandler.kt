@@ -1,9 +1,6 @@
 package ink.ptms.artifex.kotlin
 
-import ink.ptms.artifex.Artifex
-import ink.ptms.artifex.Import
-import ink.ptms.artifex.ImportMinecraftServer
-import ink.ptms.artifex.Include
+import ink.ptms.artifex.*
 import ink.ptms.artifex.script.*
 import org.jetbrains.kotlin.mainKts.CompilerOptions
 import taboolib.common.io.newFile
@@ -88,6 +85,8 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
         val compileOptions = annotations.filterByAnnotationType<CompilerOptions>().flatMap { it.annotation.options.toList() }
         // 是否引入 MinecraftServer
         val isImportMinecraftServer = annotations.filterByAnnotationType<ImportMinecraftServer>().isNotEmpty()
+        // TODO 是否引入 PaperServer
+        val isImportPaperServer = annotations.filterByAnnotationType<ImportPaperServer>().isNotEmpty()
 
         return ScriptCompiledConfiguration(importScript, context.compilationConfiguration) {
             if (includeScripts.isNotEmpty()) {
@@ -100,7 +99,13 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
                 compilerOptions.append(compileOptions)
             }
             // 扩展数据
-            artifexProperties.append(hashMapOf("importScript" to importScript, "isImportMinecraftServer" to isImportMinecraftServer, "props" to props))
+            artifexProperties.append(hashMapOf("importScript" to importScript, "props" to props).apply {
+                if (isImportMinecraftServer) {
+                    this["isImportMinecraftServer"] = true
+                } else if (isImportPaperServer) {
+                    this["isImportPaperServer"] = true
+                }
+            })
         }.asSuccess()
     }
 
