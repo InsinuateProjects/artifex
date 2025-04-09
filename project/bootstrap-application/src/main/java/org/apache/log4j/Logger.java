@@ -3,7 +3,7 @@ package org.apache.log4j;
 /**
  * Artifex
  * org.apache.log4j.Logger
- *
+ * <p>
  * TODO 待上游 taboolib 更新后移除
  *
  * @author scorez

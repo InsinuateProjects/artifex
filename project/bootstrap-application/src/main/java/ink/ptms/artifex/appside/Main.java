@@ -11,6 +11,10 @@ import taboolib.common.platform.service.PlatformIO;
 import taboolib.platform.App;
 import taboolib.platform.AppEnv;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.logging.Handler;
 
 
@@ -27,7 +31,10 @@ public class Main {
 
     public static Thread mainThread;
 
+    public static List<String> requestProjects = new ArrayList<>();
+
     public static void main(String[] args) {
+//        System.setProperty("taboolib.dev", "true");
         System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
         System.setErr(IoBuilder.forLogger("SYSTEM_ERR").setLevel(Level.ERROR).buildPrintStream());
         System.setOut(IoBuilder.forLogger("SYSTEM_OUT").setLevel(Level.INFO).buildPrintStream());
@@ -41,7 +48,14 @@ public class Main {
                 }
             }
         });
-        mainThread.start();
+        requestProjects.addAll(Arrays.asList(args));
+        if (requestProjects.isEmpty()) {
+            mainThread.start();
+        } else {
+            StringJoiner joiner = new StringJoiner(",");
+            requestProjects.forEach(joiner::add);
+            System.out.println("artifex will build script for projects " + joiner);
+        }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             App.shutdown();
             mainThread.interrupt();
