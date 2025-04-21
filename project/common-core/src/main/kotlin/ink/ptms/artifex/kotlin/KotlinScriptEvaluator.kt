@@ -1,6 +1,7 @@
 package ink.ptms.artifex.kotlin
 
 import ink.ptms.artifex.ImportScript
+import ink.ptms.artifex.remap
 import taboolib.library.reflex.Reflex.Companion.invokeMethod
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
@@ -28,6 +29,17 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
         scriptEvaluationConfiguration: ScriptEvaluationConfiguration,
     ): ResultWithDiagnostics<EvaluationResult> {
         return try {
+            // 获取编译数据
+            val properties = compiledScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties] ?: emptyMap()
+
+            // remappes 处理
+            val compiledScript0 = when(properties["remapperId"]) {
+                "minecraftserver" -> compiledScript.remap("minecraftserver")
+                "paper" -> compiledScript.remap("paper")
+                else -> compiledScript.remap()
+            }
+            compilerOutputFiles as MutableMap
+            compilerOutputFiles.putAll(compiledScript0.compilerOutputFiles())
 
             var mainLoader: KotlinScriptClassLoader? = null
             val classLoaded = if (compiledScript is KJvmCompiledScript) {

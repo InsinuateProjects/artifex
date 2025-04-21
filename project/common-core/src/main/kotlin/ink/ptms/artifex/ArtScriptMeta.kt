@@ -1,5 +1,6 @@
 package ink.ptms.artifex
 
+import ink.ptms.artifex.kotlin.artifexProperties
 import ink.ptms.artifex.kotlin.scriptClassFQName
 import ink.ptms.artifex.script.ScriptCompiled
 import ink.ptms.artifex.script.ScriptMeta
@@ -7,6 +8,7 @@ import ink.ptms.artifex.script.ScriptSourceCode
 import ink.ptms.artifex.script.event.ScriptMetaGenerateEvent
 import taboolib.common.io.newFile
 import taboolib.library.reflex.Reflex.Companion.invokeConstructor
+import taboolib.library.reflex.Reflex.Companion.setProperty
 import taboolib.module.configuration.Configuration
 import taboolib.module.configuration.Type
 import java.io.ByteArrayOutputStream
@@ -31,7 +33,8 @@ class ArtScriptMeta(
     val includeScripts: List<CompiledScript>,
     val compilerOutputFiles: Map<String, ByteArray>,
     val providedProperties: List<Pair<String, String>>,
-    val hash: String
+    val hash: String,
+    val remapperId: String? = null
 ) : ScriptMeta {
 
     override fun name(): String {
@@ -62,6 +65,10 @@ class ArtScriptMeta(
         val json = Configuration.empty(Type.JSON)
         // 名称
         json["name"] = name
+        // remapper
+        if (remapperId != null) {
+            json["remapperid"] = remapperId
+        }
         // 版本
         json["version.compiler"] = ScriptSourceCode.SERIALIZE_VERSION
         json["version.file"] = hash
@@ -105,6 +112,7 @@ class ArtScriptMeta(
             compilerOutputFiles,
             providedProperties.toMap(),
             hash,
+            remapperId,
             json
         ))
         return json
@@ -122,6 +130,16 @@ class ArtScriptMeta(
             includeScripts,
             compiledModuleClass.invokeConstructor(compilerOutputFiles)
         )
+        // 补 remapper
+
+        if (remapperId != null) {
+            val newConfiguration = ScriptCompilationConfiguration(compiledScript.compilationConfiguration) {
+                val newProps = hashMapOf<String, Any>()
+                newProps["remapperId"] = remapperId
+                artifexProperties.append(newProps)
+            }
+            compiledScript.setProperty("data/compilationConfiguration", newConfiguration)
+        }
         return ArtScriptCompiled(compiledScript, hash, this)
     }
 

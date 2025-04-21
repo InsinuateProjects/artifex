@@ -66,7 +66,7 @@ object ArtScriptCompiler : ScriptCompiler {
     }
 
     override fun getRemapper(key: String): Remapper {
-        return this.remappers[key]!!
+        return this.remappers[key] ?: throw Exception("remapper $key not found")
     }
 
     override fun remappers(): Map<String, Remapper> {
@@ -89,11 +89,11 @@ object ArtScriptCompiler : ScriptCompiler {
                 val properties = compiledScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties] ?: emptyMap()
 
                 // remappes 处理
-                compiledScript = when {
+                /*compiledScript = when {
                     properties["isImportMinecraftServer"] == true -> compiledScript.remap("taboolib")
                     properties["isImportPaperServer"] == true -> compiledScript.remap("paper")
                     else -> compiledScript.remap()
-                }
+                }*/
 
                 // 获取引用脚本
                 val importScripts = properties["importScript"] as? List<File> ?: error("Compilation property missing: importScript")

@@ -49,7 +49,8 @@ object ScriptFileReaderVer1 : ScriptFileReader() {
             otherScripts,
             compilerOutputFiles,
             providedProperties,
-            meta.getString("version.file").toString()
+            meta.getString("version.file").toString(),
+            meta.getString("remapperid"),
         )
     }
 

@@ -101,9 +101,11 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
             // 扩展数据
             artifexProperties.append(hashMapOf("importScript" to importScript, "props" to props).apply {
                 if (isImportMinecraftServer) {
-                    this["isImportMinecraftServer"] = true
+                    this["remapperId"] = "minecraftserver"
+//                    this["isImportMinecraftServer"] = true
                 } else if (isImportPaperServer) {
-                    this["isImportPaperServer"] = true
+                    this["remapperId"] = "paper"
+//                    this["isImportPaperServer"] = true
                 }
             })
         }.asSuccess()

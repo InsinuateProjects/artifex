@@ -17,5 +17,6 @@ class ScriptMetaGenerateEvent(
     val compilerOutputFiles: Map<String, ByteArray>,
     val providedProperties: Map<String, String>,
     val hash: String,
+    val remapperId: String?,
     val meta: Configuration
 ) : ScriptEvent

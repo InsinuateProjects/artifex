@@ -55,7 +55,7 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
         // 注册 nms remapper
         // 新版转换器
         if (MinecraftVersion.isUniversalCraftBukkit) {
-            Artifex.api().getScriptCompiler().registerRemapper("taboolib", object : RemapTranslation() {
+            Artifex.api().getScriptCompiler().registerRemapper("minecraftserver", object : RemapTranslation() {
                 override fun mapType(internalName: String): String {
                     return super.mapType(ScriptRemapper.translate(internalName))
                 }
@@ -64,7 +64,7 @@ object ArtifexBukkit : Plugin(), PlatformHelper  {
                 }
             })
         } else {
-            Artifex.api().getScriptCompiler().registerRemapper("taboolib", object : RemapTranslationLegacy() {
+            Artifex.api().getScriptCompiler().registerRemapper("minecraftserver", object : RemapTranslationLegacy() {
                 override fun mapType(internalName: String): String {
                     return super.mapType(ScriptRemapper.translate(internalName))
                 }

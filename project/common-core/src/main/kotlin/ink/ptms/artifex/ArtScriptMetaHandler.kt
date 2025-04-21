@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import kotlin.script.experimental.api.KotlinType
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.util.PropertiesCollection
 
 /**
@@ -44,7 +45,8 @@ object ArtScriptMetaHandler : ScriptMetaHandler {
             script.kotlinScript.otherScripts,
             compilerOutputFiles,
             providedProperties.map { it.key to it.value.typeName },
-            script.hash
+            script.hash,
+            script.kotlinScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties]!!["remapperId"]?.toString(),
         )
     }
 
