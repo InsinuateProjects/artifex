@@ -1,5 +1,6 @@
 package ink.ptms.artifex.kotlin
 
+import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.ImportScript
 import ink.ptms.artifex.remap
 import taboolib.library.reflex.Reflex.Companion.invokeMethod
@@ -34,8 +35,12 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
 
             // remappes 处理
             val compiledScript0 = when(properties["remapperId"]) {
-                "minecraftserver" -> compiledScript.remap("minecraftserver")
-                "paper" -> compiledScript.remap("paper")
+                "minecraftserver" -> if (Artifex.api().getScriptCompiler().remappers().contains("minecraftserver")) {
+                    compiledScript.remap("minecraftserver")
+                } else compiledScript.remap()
+                "paper" -> if (Artifex.api().getScriptCompiler().remappers().contains("paper")) {
+                    compiledScript.remap("paper")
+                } else compiledScript.remap()
                 else -> compiledScript.remap()
             }
             compilerOutputFiles as MutableMap

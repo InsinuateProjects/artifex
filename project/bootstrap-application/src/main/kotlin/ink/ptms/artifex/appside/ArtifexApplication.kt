@@ -17,6 +17,7 @@ import taboolib.library.reflex.Reflex.Companion.invokeMethod
 import taboolib.library.reflex.Reflex.Companion.setProperty
 import taboolib.platform.AppConsole
 import taboolib.platform.AppIO
+import kotlin.system.exitProcess
 
 /**
  * Artifex
@@ -55,13 +56,15 @@ object ArtifexApplication : Plugin(), PlatformHelper {
                 val identifier = Artifex.api().getScriptProjectManager().getProject(it) as? ScriptProjectIdentifier.DevIdentifier
                     ?: return@forEach info("Project $it does not exist.")
                 val project = identifier.load()
-                val metas = project.invokeMethod<List<ScriptMeta>>("collectScripts", console(), true)!!
+                info("Processing project $it.")
+                val metas = project.invokeMethod<List<ScriptMeta>>("collectScripts", console(), false)!!
                 if (metas.isEmpty()) {
                     warning("Failed to build project $it.")
                 } else {
                     info("Project $it was evaluated in ${identifier.file.name}.")
                 }
             }
+            exitProcess(0)
         }
     }
 
