@@ -229,8 +229,11 @@ publishing {
     }
     publications {
         create<MavenPublication>("library") {
-            from(components["java"])
+//            from(components["java"])
             groupId = project.group.toString()
+            artifact(file("$buildDir/libs/artifex-2.1.4-api.jar")) {
+                 classifier = ""
+            }
         }
     }
 }
