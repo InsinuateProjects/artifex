@@ -30,7 +30,7 @@ plugins {
     id("org.gradle.maven-publish")
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.izzel.taboolib") version "2.0.22"
+    id("io.izzel.taboolib") version "2.0.23"
 }
 
 subprojects {
@@ -233,6 +233,9 @@ publishing {
             groupId = project.group.toString()
             artifact(file("$buildDir/libs/artifex-2.1.4-api.jar")) {
                  classifier = ""
+            }
+            artifact(file("$buildDir/libs/artifex-2.1.4-sources.jar")) {
+                 classifier = "source"
             }
         }
     }

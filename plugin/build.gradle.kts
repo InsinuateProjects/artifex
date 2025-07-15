@@ -136,9 +136,25 @@ tasks {
         mergeServiceFiles()
     }
 
-    register<ShadowJar>("sourceJar") {
+    register<ShadowJar>("apiJar") {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("api")
+        dependencies {
+            exclude(dependency("*:*"))
+        }
+        from(project(":project:common").sourceSets["main"].output)
+        from(project(":project:common-core").sourceSets["main"].output)
+        from(project(":project:common-impl-default").sourceSets["main"].output)
+        from(project(":project:common-impl-project").sourceSets["main"].output)
+        from(project(":project:common-script-api").sourceSets["main"].output)
+        from(project(":project:common-script-api-bukkit").sourceSets["main"].output)
+        from(project(":project:common-script-api-bungee").sourceSets["main"].output)
+        from(project(":project:common-script-api-velocity").sourceSets["main"].output)
+    }
+
+    register<ShadowJar>("sourceJar") {
+        archiveBaseName.set(rootProject.name)
+        archiveClassifier.set("sources")
         dependencies {
             exclude(dependency("*:*"))
         }
@@ -153,7 +169,7 @@ tasks {
     }
 
     build {
-        dependsOn("pluginJar", "appJar", "sourceJar")
+        dependsOn("pluginJar", "appJar", "apiJar", "sourceJar")
         /*doLast {
             val version = project.version
             val file = projectDir.resolve("build/libs/plugin-$version.jar")
