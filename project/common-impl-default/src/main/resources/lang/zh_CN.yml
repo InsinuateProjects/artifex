@@ -6,6 +6,7 @@ command-script-is-running: '&c[Artifex] &c脚本 {0} 已在运行.'
 command-script-is-not-running: '&c[Artifex] &c脚本 {0} 不在运行.'
 command-script-error: '&c[Artifex] &c无法读取脚本信息: {0}'
 command-script-load-dependency: '&3[Artifex] &7脚本 {0} 正在加载依赖 {1}:{2}:{3}'
+command-script-load-file: '&3[Artifex] &7脚本 {0} 正在加载依赖文件 {1}'
 command-script-compile: '&7[Artifex] &7脚本缓存不存在, 将开始编译...'
 command-script-recompiled:
   - '&7[Artifex] &7脚本内容变动, 将重新编译...'

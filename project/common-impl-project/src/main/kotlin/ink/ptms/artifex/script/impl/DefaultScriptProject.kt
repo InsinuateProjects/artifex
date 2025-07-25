@@ -49,32 +49,48 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
     val autoMount: Boolean
         get() = identifier.root().getBoolean("auto-mount")
 
-    // TODO 需要变动框架才能支持脚本项目依赖加载
+    // 根据配置文件中的依赖添加
     val runtimeProperty get() = ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
-        // 根据配置文件中的依赖添加
-        val depends = dependencies.map {
-            val args = it.split(":")
-            val groupId = args[0]
-            val artifactId = args[1]
-            val version = args[2]
-            Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
-        }
         val downloader = DependencyDownloader(PrimitiveLoader.getLibraryFile())
-        val repos = mutableListOf(Repository(PrimitiveSettings.REPO_CENTRAL)).apply {
-            addAll(repositories.map { repo -> Repository(repo) })
+        repositories.forEach { repo -> downloader.addRepository(Repository(repo)) }
+        downloader.addRepository(Repository())
+        val files = dependencies.flatMap {
+            runCatching {
+                if (it.matches("^[^:\\s]+:[^:\\s]+:[^:\\s]+$".toRegex())) {
+                    val args = it.split(":")
+                    val groupId = args[0]
+                    val artifactId = args[1]
+                    val version = args[2]
+                    val dependency = Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
+                    console().sendLang(
+                        "command-script-load-dependency",
+                        identifier.name(),
+                        dependency.groupId,
+                        dependency.artifactId,
+                        dependency.version
+                    )
+                    downloader.loadDependency(downloader.repositories, dependency).map { it.findFile(PrimitiveLoader.getLibraryFile(), "jar") }
+                } else {
+                    val file = File(it)
+                    console().sendLang(
+                        "command-script-load-file",
+                        identifier.name(),
+                        file.absolutePath
+                    )
+                    if (!file.exists()) {
+                        return@flatMap emptyList()
+                    }
+                    if (file.isDirectory) {
+                        return@flatMap file.listFiles()?.toList() ?: emptyList()
+                    }
+                    listOf(file)
+                }
+            }.getOrElse {
+                it.printStackTrace()
+                emptyList()
+            }
         }
-        val downloaded = mutableSetOf<Dependency>()
-        depends.forEach { dependency ->
-            console().sendLang(
-                "command-script-load-dependency",
-                identifier.name(),
-                dependency.groupId,
-                dependency.artifactId,
-                dependency.version
-            )
-            downloaded.addAll(downloader.loadDependency(repos, dependency))
-        }
-        defaultClasspath.addAll(downloaded.map { it.findFile(PrimitiveLoader.getLibraryFile(), "jar") })
+        defaultClasspath.addAll(files)
     }
 
     /**
@@ -153,6 +169,8 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         if (logging) {
             sender.sendLang("project-reload", name())
         }
+        // 先重载 identifier 确保依赖能够被正确使用
+        reloadConfig()
         val scripts = collectScripts(sender, forceCompile)
         if (scripts.isEmpty()) {
             return false // 若未成功编译则不会继续执行
