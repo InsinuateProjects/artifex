@@ -5,6 +5,7 @@ command-script-not-found: '&c[Artifex] &cScript {0} does not exist.'
 command-script-is-running: '&c[Artifex] &cScript {0} already is running.'
 command-script-is-not-running: '&c[Artifex] &cScript {0} is not running.'
 command-script-error: '&c[Artifex] &cFailed to get script meta: {0}'
+command-script-load-dependency: '&3[Artifex] &7Script {0} loading dependency {1}:{2}:{3}'
 command-script-compile: '&7[Artifex] &7Script cache does not exist, will start compiling...'
 command-script-recompiled:
   - '&7[Artifex] &7Script content changed, being recompiled...'

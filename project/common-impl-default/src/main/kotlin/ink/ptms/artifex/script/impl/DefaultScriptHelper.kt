@@ -70,6 +70,11 @@ class DefaultScriptHelper : ScriptHelper {
         return "${digest}#${script.text}".digest("sha-1")
     }
 
+    override fun getScriptVersion(script: ScriptSource, runtimeProperties: ScriptRuntimeProperty): String {
+        val digest = runtimeProperties.digest()
+        return "${digest}#${script.text}".digest("sha-1")
+    }
+
     override fun getScriptContainer(file: File): ScriptContainer? {
         return when {
             file.extension == "kts" -> getScriptKtsFileContainer(file)

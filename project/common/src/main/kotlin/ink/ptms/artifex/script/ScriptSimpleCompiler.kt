@@ -66,11 +66,30 @@ interface ScriptSimpleCompiler {
     ): ScriptCompiled?
 
     /**
+     * 通过 runtimeProperties 编译脚本，向控制台发送 {command-script-compile-info} 信息，并释放编译文件
+     *
+     * @param script 脚本文件
+     * @param sender 汇报接收者
+     * @param providedProperties 构建参数
+     * @param loggingBefore 是否在编译前发送消息
+     * @param save 是否保存编译文件
+     * @param detailError 是否打印详细错误信息
+     */
+    fun compileByRuntimeProperties(
+        script: File,
+        sender: ProxyCommandSender,
+        runtimeProperties: ScriptRuntimeProperty,
+        loggingBefore: Boolean = true,
+        save: Boolean = true,
+        detailError: Boolean = false,
+    ): ScriptCompiled?
+
+    /**
      * 编译检查
      *
      * @param file 脚本文件
      * @param sender 汇报接收者
-     * @param providedProperties 构建参数
+     * @param runtimeProperties 构建参数
      * @param logging 是否打印信息
      * @param forceCompile 是否强制编译
      * @param save 是否保存编译文件
@@ -79,7 +98,7 @@ interface ScriptSimpleCompiler {
     fun compileCheck(
         file: File,
         sender: ProxyCommandSender,
-        providedProperties: Map<String, Any>,
+        runtimeProperties: ScriptRuntimeProperty,
         logging: Boolean = true,
         forceCompile: Boolean = false,
         save: Boolean = true,

@@ -5,6 +5,7 @@ import ink.ptms.artifex.script.*
 import ink.ptms.artifex.script.event.ScriptProjectReleasedEvent
 import ink.ptms.artifex.script.event.ScriptProjectReloadedEvent
 import ink.ptms.artifex.script.event.ScriptProjectStartedEvent
+import taboolib.common.PrimitiveLoader
 import taboolib.common.PrimitiveSettings
 import taboolib.common.env.DependencyScope
 import taboolib.common.env.legacy.Dependency
@@ -12,6 +13,7 @@ import taboolib.common.env.legacy.DependencyDownloader
 import taboolib.common.env.legacy.Repository
 import taboolib.common.io.newFile
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getDataFolder
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
@@ -48,9 +50,7 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         get() = identifier.root().getBoolean("auto-mount")
 
     // TODO 需要变动框架才能支持脚本项目依赖加载
-    /*private val scriptLibraries = newFile(Artifex.api().getScriptHelper().buildFolder(), "libraries", folder = true)
-
-    private val runtimeProperty get() = ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
+    val runtimeProperty get() = ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
         // 根据配置文件中的依赖添加
         val depends = dependencies.map {
             val args = it.split(":")
@@ -59,12 +59,23 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
             val version = args[2]
             Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
         }
-        val downloader = DependencyDownloader(scriptLibraries)
+        val downloader = DependencyDownloader(PrimitiveLoader.getLibraryFile())
         val repos = mutableListOf(Repository(PrimitiveSettings.REPO_CENTRAL)).apply {
             addAll(repositories.map { repo -> Repository(repo) })
         }
-        defaultClasspath.addAll(downloader.loadDependency(repos, depends).map { it.findFile(scriptLibraries, "jar") })
-    }*/
+        val downloaded = mutableSetOf<Dependency>()
+        depends.forEach { dependency ->
+            console().sendLang(
+                "command-script-load-dependency",
+                identifier.name(),
+                dependency.groupId,
+                dependency.artifactId,
+                dependency.version
+            )
+            downloaded.addAll(downloader.loadDependency(repos, dependency))
+        }
+        defaultClasspath.addAll(downloaded.map { it.findFile(PrimitiveLoader.getLibraryFile(), "jar") })
+    }
 
     /**
      * 检查脚本是否可以启动
@@ -219,7 +230,7 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
             .afterEval {
                 runningScripts += it
                 it.container().exchangeData()["@Project"] = this@DefaultScriptProject
-            }.apply(ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()))
+            }.apply(runtimeProperty)
     }
 
     /**

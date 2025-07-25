@@ -3,7 +3,6 @@ package ink.ptms.artifex.script.impl
 import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.script.*
 import taboolib.common.platform.ProxyCommandSender
-import taboolib.common.platform.function.info
 import taboolib.module.lang.sendLang
 import java.io.File
 
@@ -47,7 +46,7 @@ class DefaultDevScriptProject(identifier: ScriptProjectIdentifier, constructor: 
             if (helper.getSimpleCompiler().compileCheck(
                     scriptFile,
                     sender,
-                    providedProperties = emptyMap(),
+                    runtimeProperties = runtimeProperty,
                     forceCompile = forceCompile
                 )) {
                 val buildFile = File(helper.buildFolder(), "${scriptFile.nameWithoutExtension}.jar")

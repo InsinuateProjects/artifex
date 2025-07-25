@@ -106,7 +106,15 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
             sender.sendLang("command-script-is-running", file.nameWithoutExtension)
             return null
         }
-        if (helper.getSimpleCompiler().compileCheck(file, sender, providedProperties, loggingCompile, forceCompile, save, detailError)) {
+        if (helper.getSimpleCompiler().compileCheck(
+                file,
+                sender,
+                ScriptRuntimeProperty.fromProvidedProperties(providedProperties),
+                loggingCompile,
+                forceCompile,
+                save,
+                detailError
+            )) {
             val buildFile = File(helper.buildFolder(), "${file.nameWithoutExtension}.jar")
             if (buildFile.exists()) {
                 return prepareEvaluationByJarFile(buildFile, sender, loggingRunning, detailError, prepare)
@@ -135,7 +143,13 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
             }?.mount(true)?.apply(ScriptRuntimeProperty(runArgs, providedProperties))
         }
         // 检查编译
-        else if (helper.getSimpleCompiler().compileCheck(file, sender, providedProperties = providedProperties, forceCompile = forceCompile, detailError = detailError)) {
+        else if (helper.getSimpleCompiler().compileCheck(
+                file,
+                sender,
+                runtimeProperties = ScriptRuntimeProperty.fromProvidedProperties(providedProperties),
+                forceCompile = forceCompile,
+                detailError = detailError
+            )) {
             val buildFile = File(helper.buildFolder(), "${file.nameWithoutExtension}.jar")
             if (buildFile.exists()) {
                 container.releaseNow()

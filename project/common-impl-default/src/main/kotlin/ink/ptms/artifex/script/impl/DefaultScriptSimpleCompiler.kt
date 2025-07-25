@@ -69,11 +69,39 @@ class DefaultScriptSimpleCompiler : ScriptSimpleCompiler {
         save: Boolean,
         detailError: Boolean,
     ): ScriptCompiled? {
+        return compileByRuntimeProperties(
+            script,
+            sender,
+            ScriptRuntimeProperty.fromProvidedProperties(providedProperties),
+            loggingBefore,
+            save,
+            detailError
+        )
+    }
+
+    /**
+     * 通过 runtimeProperties 编译脚本，向控制台发送 {command-script-compile-info} 信息，并释放编译文件
+     *
+     * @param script 脚本文件
+     * @param sender 汇报接收者
+     * @param providedProperties 构建参数
+     * @param loggingBefore 是否在编译前发送消息
+     * @param save 是否保存编译文件
+     * @param detailError 是否打印详细错误信息
+     */
+    override fun compileByRuntimeProperties(
+        script: File,
+        sender: ProxyCommandSender,
+        runtimeProperties: ScriptRuntimeProperty,
+        loggingBefore: Boolean,
+        save: Boolean,
+        detailError: Boolean,
+    ): ScriptCompiled? {
         val compiled = prepareCompile(Artifex.api().getScriptCompiler().toScriptSource(script), sender, detailError = detailError) {
             if (loggingBefore) {
-                sender.sendLang("command-script-compile-info", providedProperties)
+                sender.sendLang("command-script-compile-info", runtimeProperties.providedProperties)
             }
-        }.apply(ScriptRuntimeProperty.fromProvidedProperties(providedProperties))
+        }.apply(runtimeProperties)
         // 释放编译文件
         if (save) {
             compiled?.generateScriptJar(newFile(helper.buildFolder(), "${script.nameWithoutExtension}.jar"))
@@ -86,7 +114,7 @@ class DefaultScriptSimpleCompiler : ScriptSimpleCompiler {
      *
      * @param file 脚本文件
      * @param sender 汇报接收者
-     * @param providedProperties 构建参数
+     * @param runtimeProperties 构建参数
      * @param logging 是否打印信息
      * @param forceCompile 是否强制编译
      * @param save 是否保存编译文件
@@ -95,7 +123,7 @@ class DefaultScriptSimpleCompiler : ScriptSimpleCompiler {
     override fun compileCheck(
         file: File,
         sender: ProxyCommandSender,
-        providedProperties: Map<String, Any>,
+        runtimeProperties: ScriptRuntimeProperty,
         logging: Boolean,
         forceCompile: Boolean,
         save: Boolean,
@@ -118,30 +146,33 @@ class DefaultScriptSimpleCompiler : ScriptSimpleCompiler {
             }
             if (version != null) {
                 // 获取当前脚本文件版本
-                val currentVersion = helper.getScriptVersion(Artifex.api().getScriptCompiler().toScriptSource(file), providedProperties)
+                val currentVersion = helper.getScriptVersion(Artifex.api().getScriptCompiler().toScriptSource(file),
+                    runtimeProperties
+                )
                 // 特定文本内容的脚本将跳过编译
                 if (file.digest() != helper.getFixedScriptVersion() && currentVersion != version) {
                     if (logging) {
                         sender.sendLang("command-script-recompiled", version, currentVersion)
                     }
                     // 重新编译
-                    compileByProvidedProperties(file, sender, providedProperties, logging, save, detailError) ?: return false
+                    compileByRuntimeProperties(file, sender, runtimeProperties, logging, save, detailError) ?: return false
                 }
-                val event = ScriptCompileCheckEvent(file, sender, providedProperties, logging, save, detailError, buildFile, version, currentVersion)
+                val event = ScriptCompileCheckEvent(file, sender,
+                    runtimeProperties, logging, save, detailError, buildFile, version, currentVersion)
                 Artifex.api().getScriptEventBus().call(event)
                 // 重新编译
                 if (event.recompile) {
-                    compileByProvidedProperties(file, sender, providedProperties, logging, save, detailError) ?: return false
+                    compileByRuntimeProperties(file, sender, runtimeProperties, logging, save, detailError) ?: return false
                 }
                 return event.checkResult
             } else {
-                compileByProvidedProperties(file, sender, providedProperties, logging, save, detailError) ?: return false
+                compileByRuntimeProperties(file, sender, runtimeProperties, logging, save, detailError) ?: return false
             }
         } else {
             if (!forceCompile && logging) {
                 sender.sendLang("command-script-compile")
             }
-            compileByProvidedProperties(file, sender, providedProperties, logging, save, detailError) ?: return false
+            compileByRuntimeProperties(file, sender, runtimeProperties, logging, save, detailError) ?: return false
         }
         return true
     }

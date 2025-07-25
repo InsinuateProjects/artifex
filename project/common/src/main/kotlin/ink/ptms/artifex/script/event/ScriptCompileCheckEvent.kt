@@ -1,5 +1,6 @@
 package ink.ptms.artifex.script.event
 
+import ink.ptms.artifex.script.ScriptRuntimeProperty
 import taboolib.common.platform.ProxyCommandSender
 import java.io.File
 
@@ -13,7 +14,7 @@ import java.io.File
 class ScriptCompileCheckEvent(
     val file: File,
     val sender: ProxyCommandSender,
-    val providedProperties: Map<String, Any>,
+    val runtimeProperties: ScriptRuntimeProperty,
     val logging: Boolean,
     val save: Boolean,
     val detailError: Boolean,

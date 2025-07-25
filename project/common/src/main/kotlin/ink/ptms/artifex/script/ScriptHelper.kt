@@ -55,6 +55,14 @@ interface ScriptHelper {
     fun getScriptVersion(script: ScriptSource, providedProperties: Map<String, Any>): String
 
     /**
+     * 获取脚本源代码版本（哈希值）
+     *
+     * @param script 脚本源
+     * @param runtimeProperties 编译参数
+     */
+    fun getScriptVersion(script: ScriptSource, runtimeProperties: ScriptRuntimeProperty): String
+
+    /**
      * 获取脚本文件所对应的正在运行的脚本容器
      *
      * @param file 脚本文件（可以是 jar 也可以是 kts）
