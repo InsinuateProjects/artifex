@@ -231,10 +231,10 @@ publishing {
         create<MavenPublication>("library") {
 //            from(components["java"])
             groupId = project.group.toString()
-            artifact(file("$buildDir/libs/artifex-2.1.4-api.jar")) {
+            artifact(file("$buildDir/libs/artifex-$version-api.jar")) {
                  classifier = ""
             }
-            artifact(file("$buildDir/libs/artifex-2.1.4-sources.jar")) {
+            artifact(file("$buildDir/libs/artifex-$version-sources.jar")) {
                  classifier = "source"
             }
         }
