@@ -34,7 +34,7 @@ interface ScriptSimpleEvaluator {
      *
      * @param file 脚本源
      * @param sender 汇报接收者
-     * @param providedProperties 构建参数
+     * @param runtimeProperties 构建参数
      * @param loggingCompile 是否打印编译信息
      * @param loggingRunning 是否打印运行信息
      * @param forceCompile 是否强制编译
@@ -45,7 +45,7 @@ interface ScriptSimpleEvaluator {
     fun prepareEvaluation(
         file: File,
         sender: ProxyCommandSender,
-        providedProperties: Map<String, Any> = mapOf(),
+        runtimeProperties: ScriptRuntimeProperty = ScriptRuntimeProperty(),
         loggingCompile: Boolean = true,
         loggingRunning: Boolean = true,
         forceCompile: Boolean = false,
@@ -60,15 +60,14 @@ interface ScriptSimpleEvaluator {
      * @param file 脚本文件
      * @param sender 汇报接收人
      * @param runArgs 运行参数
-     * @param providedProperties 编译参数
+     * @param runtimeProperties 编译参数
      * @param forceCompile 是否强制编译
      * @param detailError 是否打印详细错误信息
      */
     fun reload(
         file: File,
         sender: ProxyCommandSender,
-        runArgs: Map<String, Any> = emptyMap(),
-        providedProperties: Map<String, Any> = emptyMap(),
+        runtimeProperties: ScriptRuntimeProperty = ScriptRuntimeProperty(),
         forceCompile: Boolean = false,
         detailError: Boolean = false
     )

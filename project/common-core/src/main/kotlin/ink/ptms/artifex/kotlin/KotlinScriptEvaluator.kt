@@ -3,8 +3,11 @@ package ink.ptms.artifex.kotlin
 import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.ImportScript
 import ink.ptms.artifex.remap
+import ink.ptms.artifex.script.ScriptRuntimeProperty
 import taboolib.library.reflex.Reflex.Companion.invokeMethod
+import java.io.File
 import java.lang.reflect.InvocationTargetException
+import java.net.URLClassLoader
 import kotlin.reflect.KClass
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.jvm.JvmScriptEvaluationConfigurationKeys
@@ -23,6 +26,7 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
         return eval(null, compiledScript.compilerOutputFiles(), compiledScript, scriptEvaluationConfiguration)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private suspend fun eval(
         parentLoader: KotlinScriptClassLoader?,
         compilerOutputFiles: Map<String, ByteArray>,
@@ -43,6 +47,10 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
                 } else compiledScript.remap()
                 else -> compiledScript.remap()
             }
+
+            // 依赖库导入
+            val defaultClasspath = properties["defaultClasspath"] as? List<File> ?: listOf()
+
             compilerOutputFiles as MutableMap
             compilerOutputFiles.putAll(compiledScript0.compilerOutputFiles())
 
@@ -75,7 +83,11 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
                         }
                         // 执行脚本并通过发射获取返回值
                         val resultValue = try {
-                            val instance = scriptClass.eval(configuration, importedScriptsEvalResults)
+                            val instance = scriptClass.eval(
+                                configuration,
+                                defaultClasspath,
+                                importedScriptsEvalResults
+                            )
                             if (compiledScript.resultField != null) {
                                 val name = compiledScript.resultField!!.first
                                 val type = compiledScript.resultField!!.second
@@ -103,7 +115,11 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
     /**
      * 运行脚本，参数顺序不可修改
      */
-    private fun KClass<*>.eval(configuration: ScriptEvaluationConfiguration, results: List<EvaluationResult>): Any {
+    private fun KClass<*>.eval(
+        configuration: ScriptEvaluationConfiguration,
+        defaultClasspath: List<File>,
+        results: List<EvaluationResult>
+    ): Any {
         val args = ArrayList<Any?>()
 
         configuration[ScriptEvaluationConfiguration.previousSnippets]?.let {
@@ -131,6 +147,10 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
 
         // 注册关联类加载器
         (java.classLoader as KotlinScriptClassLoader).relation += relation
+        // 依赖库加载
+        if (defaultClasspath.isNotEmpty()) {
+            (java.classLoader as KotlinScriptClassLoader).relation += URLClassLoader(defaultClasspath.map { it.toURI().toURL() }.toTypedArray())
+        }
 
         configuration[ScriptEvaluationConfiguration.implicitReceivers]?.let {
             args.addAll(it)

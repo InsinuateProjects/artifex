@@ -98,9 +98,10 @@ object Command {
                         val compile = demand.tags.contains("C")
                         // 编译运行
                         submitAsync {
-                            helper.getSimpleEvaluator().prepareEvaluation(file, sender, providedProperties = props, forceCompile = compile, detailError = true) {
+                            val runtimeProperty = ScriptRuntimeProperty(args, props)
+                            helper.getSimpleEvaluator().prepareEvaluation(file, sender, runtimeProperties = runtimeProperty, forceCompile = compile, detailError = true) {
                                 sender.sendLang("command-script-execute", args, props)
-                            }?.mount(mount)?.apply(ScriptRuntimeProperty(args, props))
+                            }?.mount(mount)?.apply(runtimeProperty)
                         }
                     } else {
                         sender.sendLang("command-script-not-found", context["file"])
@@ -232,7 +233,16 @@ object Command {
                         val args = demand.dataMap.keys.filter { it.startsWith("A") }.associate { it.substring(1) to type(demand.get(it)!!) }
                         val props = demand.dataMap.keys.filter { it.startsWith("P") }.associate { it.substring(1) to type(demand.get(it)!!) }
                         val compile = demand.tags.contains("C")
-                        submitAsync { helper.getSimpleEvaluator().reload(file, sender, runArgs = args, providedProperties = props, forceCompile = compile, detailError = true) }
+                        submitAsync {
+                            val runtimeProperty = ScriptRuntimeProperty(args, props)
+                            helper.getSimpleEvaluator().reload(
+                                file,
+                                sender,
+                                runtimeProperties = runtimeProperty,
+                                forceCompile = compile,
+                                detailError = true
+                            )
+                        }
                     }
                 }
             }

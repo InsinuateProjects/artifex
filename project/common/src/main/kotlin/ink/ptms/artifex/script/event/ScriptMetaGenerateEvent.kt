@@ -1,6 +1,7 @@
 package ink.ptms.artifex.script.event
 
 import taboolib.module.configuration.Configuration
+import java.io.File
 
 /**
  * Artifex
@@ -16,6 +17,7 @@ class ScriptMetaGenerateEvent(
     val includeScripts: List<String>,
     val compilerOutputFiles: Map<String, ByteArray>,
     val providedProperties: Map<String, String>,
+    val dependencies: List<File>,
     val hash: String,
     val remapperId: String?,
     val meta: Configuration

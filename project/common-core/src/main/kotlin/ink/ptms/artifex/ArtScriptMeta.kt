@@ -33,6 +33,7 @@ class ArtScriptMeta(
     val includeScripts: List<CompiledScript>,
     val compilerOutputFiles: Map<String, ByteArray>,
     val providedProperties: List<Pair<String, String>>,
+    val defaultClasspath: List<File>,
     val hash: String,
     val remapperId: String? = null
 ) : ScriptMeta {
@@ -67,8 +68,10 @@ class ArtScriptMeta(
         json["name"] = name
         // remapper
         if (remapperId != null) {
-            json["remapperid"] = remapperId
+            json["remapperId"] = remapperId
         }
+        // 依赖文件
+        json["defaultClasspath"] = defaultClasspath.map { it.path }
         // 版本
         json["version.compiler"] = ScriptSourceCode.SERIALIZE_VERSION
         json["version.file"] = hash
@@ -111,6 +114,7 @@ class ArtScriptMeta(
             includeScripts.map { it.scriptClassFQName() },
             compilerOutputFiles,
             providedProperties.toMap(),
+            defaultClasspath,
             hash,
             remapperId,
             json
@@ -130,16 +134,19 @@ class ArtScriptMeta(
             includeScripts,
             compiledModuleClass.invokeConstructor(compilerOutputFiles)
         )
-        // 补 remapper
-
-        if (remapperId != null) {
-            val newConfiguration = ScriptCompilationConfiguration(compiledScript.compilationConfiguration) {
-                val newProps = hashMapOf<String, Any>()
+        val newConfiguration = ScriptCompilationConfiguration(compiledScript.compilationConfiguration) {
+            val newProps = hashMapOf<String, Any>()
+            // 补 remapper
+            if (remapperId != null) {
                 newProps["remapperId"] = remapperId
-                artifexProperties.append(newProps)
             }
-            compiledScript.setProperty("data/compilationConfiguration", newConfiguration)
+            // 依赖库
+            if (defaultClasspath.isNotEmpty()) {
+                newProps["defaultClasspath"] = defaultClasspath
+            }
+            artifexProperties.append(newProps)
         }
+        compiledScript.setProperty("data/compilationConfiguration", newConfiguration)
         return ArtScriptCompiled(compiledScript, hash, this)
     }
 

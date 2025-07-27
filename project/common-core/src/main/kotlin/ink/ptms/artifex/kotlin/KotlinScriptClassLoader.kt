@@ -17,10 +17,17 @@ class KotlinScriptClassLoader(val entries: Map<String, ByteArray>, val relation:
         if (find != null) {
             return find
         }
-        relation.filterIsInstance<KotlinScriptClassLoader>().forEach {
-            find = it.getClass(name)
-            if (find != null) {
-                return find!!
+        relation.forEach { classLoader ->
+            if (classLoader is KotlinScriptClassLoader) {
+                find = classLoader.getClass(name)
+                if (find != null) {
+                    return find!!
+                }
+            } else {
+                find = classLoader.loadClass(name)
+                if (find != null) {
+                    return find!!
+                }
             }
         }
         throw ClassNotFoundException(name)

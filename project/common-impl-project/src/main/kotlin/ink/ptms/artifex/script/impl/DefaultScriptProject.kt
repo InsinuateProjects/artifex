@@ -15,6 +15,8 @@ import taboolib.common.io.newFile
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getDataFolder
+import taboolib.common.util.ResettableLazy
+import taboolib.common.util.resettableLazy
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
 import taboolib.module.lang.sendLang
@@ -50,47 +52,51 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         get() = identifier.root().getBoolean("auto-mount")
 
     // 根据配置文件中的依赖添加
-    val runtimeProperty get() = ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
-        val downloader = DependencyDownloader(PrimitiveLoader.getLibraryFile())
-        repositories.forEach { repo -> downloader.addRepository(Repository(repo)) }
-        downloader.addRepository(Repository())
-        val files = dependencies.flatMap {
-            runCatching {
-                if (it.matches("^[^:\\s]+:[^:\\s]+:[^:\\s]+$".toRegex())) {
-                    val args = it.split(":")
-                    val groupId = args[0]
-                    val artifactId = args[1]
-                    val version = args[2]
-                    val dependency = Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
-                    console().sendLang(
-                        "command-script-load-dependency",
-                        identifier.name(),
-                        dependency.groupId,
-                        dependency.artifactId,
-                        dependency.version
-                    )
-                    downloader.loadDependency(downloader.repositories, dependency).map { it.findFile(PrimitiveLoader.getLibraryFile(), "jar") }
-                } else {
-                    val file = File(it)
-                    console().sendLang(
-                        "command-script-load-file",
-                        identifier.name(),
-                        file.absolutePath
-                    )
-                    if (!file.exists()) {
-                        return@flatMap emptyList()
+    val runtimeProperty by resettableLazy("runtime-${name()}") {
+        ScriptRuntimeProperty(mapOf("@Id" to runningId), mapOf()).apply {
+            val downloader = DependencyDownloader(PrimitiveLoader.getLibraryFile())
+            val repos = repositories.map { Repository(it) }.toMutableSet()
+            repos.forEach { repo -> downloader.addRepository(repo) }
+            repos.add(Repository())
+            downloader.addRepository(Repository())
+            val files = dependencies.flatMap {
+                runCatching {
+                    if (it.matches("^[^:\\s]+:[^:\\s]+:[^:\\s]+$".toRegex())) {
+                        val args = it.split(":")
+                        val groupId = args[0]
+                        val artifactId = args[1]
+                        val version = args[2]
+                        val dependency = Dependency(groupId, artifactId, version, DependencyScope.RUNTIME)
+                        console().sendLang(
+                            "command-script-load-dependency",
+                            identifier.name(),
+                            dependency.groupId,
+                            dependency.artifactId,
+                            dependency.version
+                        )
+                        downloader.loadDependency(repos, dependency).map { it.findFile(PrimitiveLoader.getLibraryFile(), "jar") }
+                    } else {
+                        val file = File(it)
+                        console().sendLang(
+                            "command-script-load-file",
+                            identifier.name(),
+                            file.path
+                        )
+                        if (!file.exists()) {
+                            return@flatMap emptyList()
+                        }
+                        if (file.isDirectory) {
+                            return@flatMap file.listFiles()?.toList() ?: emptyList()
+                        }
+                        listOf(file)
                     }
-                    if (file.isDirectory) {
-                        return@flatMap file.listFiles()?.toList() ?: emptyList()
-                    }
-                    listOf(file)
+                }.getOrElse {
+                    it.printStackTrace()
+                    emptyList()
                 }
-            }.getOrElse {
-                it.printStackTrace()
-                emptyList()
             }
+            defaultClasspath.addAll(files)
         }
-        defaultClasspath.addAll(files)
     }
 
     /**
@@ -171,6 +177,7 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         }
         // 先重载 identifier 确保依赖能够被正确使用
         reloadConfig()
+        ResettableLazy.reset("runtime-${name()}")
         val scripts = collectScripts(sender, forceCompile)
         if (scripts.isEmpty()) {
             return false // 若未成功编译则不会继续执行
@@ -241,6 +248,7 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
         data["@Project"] = this
         // 先加载依赖
 
+        val runtimeProperty = this.runtimeProperty
         // 运行脚本
         Artifex.api().getScriptHelper().getSimpleEvaluator().prepareEvaluation(scriptMeta, sender, loggingRunning = false)
             .loggingMounted(false)
@@ -248,7 +256,8 @@ abstract class DefaultScriptProject(val identifier: ScriptProjectIdentifier, val
             .afterEval {
                 runningScripts += it
                 it.container().exchangeData()["@Project"] = this@DefaultScriptProject
-            }.apply(runtimeProperty)
+            }
+            .apply(runtimeProperty)
     }
 
     /**

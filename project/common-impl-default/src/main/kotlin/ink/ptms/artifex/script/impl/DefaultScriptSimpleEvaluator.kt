@@ -45,7 +45,7 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
      *
      * @param file 脚本源
      * @param sender 汇报接收者
-     * @param providedProperties 构建参数
+     * @param runtimeProperties 构建参数
      * @param loggingCompile 是否打印编译信息
      * @param loggingRunning 是否打印运行信息
      * @param forceCompile 是否强制编译
@@ -56,7 +56,7 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
     override fun prepareEvaluation(
         file: File,
         sender: ProxyCommandSender,
-        providedProperties: Map<String, Any>,
+        runtimeProperties: ScriptRuntimeProperty,
         loggingCompile: Boolean,
         loggingRunning: Boolean,
         forceCompile: Boolean,
@@ -66,7 +66,8 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
     ): TaskEvaluator? {
         return when {
             file.isZipFile() -> prepareEvaluationByJarFile(file, sender, loggingRunning, detailError, prepare)
-            file.extension == "kts" -> prepareEvaluationByKtsFile(file, sender, providedProperties, loggingCompile, loggingRunning, forceCompile, save, detailError, prepare)
+            file.extension == "kts" -> prepareEvaluationByKtsFile(file, sender,
+                runtimeProperties, loggingCompile, loggingRunning, forceCompile, save, detailError, prepare)
             else -> error("Unknown file type: ${file.extension}")
         }
     }
@@ -91,7 +92,7 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
     private fun prepareEvaluationByKtsFile(
         file: File,
         sender: ProxyCommandSender,
-        providedProperties: Map<String, Any> = mapOf(),
+        runtimeProperties: ScriptRuntimeProperty = ScriptRuntimeProperty(),
         loggingCompile: Boolean = true,
         loggingRunning: Boolean = true,
         forceCompile: Boolean = false,
@@ -109,7 +110,7 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
         if (helper.getSimpleCompiler().compileCheck(
                 file,
                 sender,
-                ScriptRuntimeProperty.fromProvidedProperties(providedProperties),
+                runtimeProperties,
                 loggingCompile,
                 forceCompile,
                 save,
@@ -123,7 +124,13 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
         return null
     }
 
-    override fun reload(file: File, sender: ProxyCommandSender, runArgs: Map<String, Any>, providedProperties: Map<String, Any>, forceCompile: Boolean, detailError: Boolean) {
+    override fun reload(
+        file: File,
+        sender: ProxyCommandSender,
+        runtimeProperties: ScriptRuntimeProperty,
+        forceCompile: Boolean,
+        detailError: Boolean
+    ) {
         if (!helper.isScriptFileRunning(file, sender)) {
             sender.sendLang("command-script-is-not-running", file.nameWithoutExtension)
             return
@@ -138,24 +145,24 @@ class DefaultScriptSimpleEvaluator : ScriptSimpleEvaluator {
         if (file.extension == "jar") {
             // 释放脚本并重新运行
             container.releaseNow()
-            prepareEvaluation(file, sender, providedProperties = providedProperties, forceCompile = forceCompile, detailError = detailError) {
-                sender.sendLang("command-script-execute", runArgs, providedProperties)
-            }?.mount(true)?.apply(ScriptRuntimeProperty(runArgs, providedProperties))
+            prepareEvaluation(file, sender, runtimeProperties = runtimeProperties, forceCompile = forceCompile, detailError = detailError) {
+                sender.sendLang("command-script-execute", runtimeProperties.runArgs, runtimeProperties.providedProperties)
+            }?.mount(true)?.apply(runtimeProperties)
         }
         // 检查编译
         else if (helper.getSimpleCompiler().compileCheck(
                 file,
                 sender,
-                runtimeProperties = ScriptRuntimeProperty.fromProvidedProperties(providedProperties),
+                runtimeProperties = runtimeProperties,
                 forceCompile = forceCompile,
                 detailError = detailError
             )) {
             val buildFile = File(helper.buildFolder(), "${file.nameWithoutExtension}.jar")
             if (buildFile.exists()) {
                 container.releaseNow()
-                prepareEvaluation(file, sender, providedProperties = providedProperties, forceCompile = forceCompile, detailError = detailError) {
-                    sender.sendLang("command-script-execute", runArgs, providedProperties)
-                }?.mount(true)?.apply(ScriptRuntimeProperty(runArgs, providedProperties))
+                prepareEvaluation(file, sender, runtimeProperties = runtimeProperties, forceCompile = forceCompile, detailError = detailError) {
+                    sender.sendLang("command-script-execute", runtimeProperties.runArgs, runtimeProperties.providedProperties)
+                }?.mount(true)?.apply(runtimeProperties)
             }
         }
     }

@@ -99,7 +99,11 @@ class KotlinCompilationConfigurationHandler(val props: ScriptRuntimeProperty) : 
                 compilerOptions.append(compileOptions)
             }
             // 扩展数据
-            artifexProperties.append(hashMapOf("importScript" to importScript, "props" to props).apply {
+            artifexProperties.append(hashMapOf(
+                "importScript" to importScript,
+                "props" to props,
+                "defaultClasspath" to props.defaultClasspath
+            ).apply {
                 if (isImportMinecraftServer) {
                     this["remapperId"] = "minecraftserver"
 //                    this["isImportMinecraftServer"] = true

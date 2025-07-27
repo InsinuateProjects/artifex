@@ -49,8 +49,9 @@ object ScriptFileReaderVer1 : ScriptFileReader() {
             otherScripts,
             compilerOutputFiles,
             providedProperties,
+            meta.getStringList("defaultClasspath").map { File(it) },
             meta.getString("version.file").toString(),
-            meta.getString("remapperid"),
+            meta.getString("remapperId"),
         )
     }
 

@@ -39,14 +39,17 @@ object ArtScriptMetaHandler : ScriptMetaHandler {
         // providedProperties: {runArgs=kotlin.script.experimental.api.KotlinType@790e6f3}
         val properties = script.kotlinScript.compilationConfiguration.getProperty<Map<*, *>>("properties")!!
         val providedProperties = properties[PropertiesCollection.Key("providedProperties", null)] as Map<String, KotlinType>
+
+        val metaMap = script.kotlinScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties]!!
         return ArtScriptMeta(
             scriptClassFQName,
             if (resultField != null) resultField.first to resultField.second.typeName else null,
             script.kotlinScript.otherScripts,
             compilerOutputFiles,
             providedProperties.map { it.key to it.value.typeName },
+            (metaMap["defaultClasspath"] as List<File>),
             script.hash,
-            script.kotlinScript.compilationConfiguration[ScriptCompilationConfiguration.artifexProperties]!!["remapperId"]?.toString(),
+            metaMap["remapperId"]?.toString(),
         )
     }
 
