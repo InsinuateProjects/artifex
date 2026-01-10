@@ -71,7 +71,7 @@ class ArtScriptMeta(
             json["remapperId"] = remapperId
         }
         // 依赖文件
-        json["defaultClasspath"] = defaultClasspath.map { it.path }
+        json["defaultClasspath"] = defaultClasspath.map { it.path.replace('\\', '/') }
         // 版本
         json["version.compiler"] = ScriptSourceCode.SERIALIZE_VERSION
         json["version.file"] = hash
