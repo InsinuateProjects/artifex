@@ -101,6 +101,7 @@ object KotlinEnvironments {
 
     /**
      * 自定义的依赖下载器，可以排除特定的依赖（如 Kotlin 2.0+ 中仅存在 pom 的库）
+     * TODO 来自AI，待优化
      */
     private class FilteredDependencyDownloader(
         file: File,
