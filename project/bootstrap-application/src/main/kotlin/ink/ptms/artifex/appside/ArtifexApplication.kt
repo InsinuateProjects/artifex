@@ -15,8 +15,10 @@ import taboolib.common.platform.service.PlatformIO
 import taboolib.library.reflex.Reflex.Companion.getProperty
 import taboolib.library.reflex.Reflex.Companion.invokeMethod
 import taboolib.library.reflex.Reflex.Companion.setProperty
+import taboolib.library.reflex.ReflexClass
 import taboolib.platform.AppConsole
 import taboolib.platform.AppIO
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 /**
@@ -41,7 +43,7 @@ object ArtifexApplication : Plugin(), PlatformHelper {
         PlatformFactory.awokenMap["ink.ptms.artifex.PlatformHelper"] = this
         // 仅构建时不自启动
         if (Main.requestProjects.isNotEmpty()) {
-            runningClassMapInJar.remove("ink.ptms.artifex.script.impl.DefaultScriptProjectManager")
+            (runningClassMapInJar as ConcurrentHashMap<String, ReflexClass>).remove("ink.ptms.artifex.script.impl.DefaultScriptProjectManager")
             // 需要额外触发 init
             Class.forName("ink.ptms.artifex.script.impl.DefaultScriptProjectManager")
                 .getProperty<Any>("INSTANCE", isStatic = true)!!

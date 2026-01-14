@@ -193,6 +193,7 @@ object DefaultScriptAPI : ArtifexAPI {
         releaseResourceFile("runtime/script-api-bukkit.jar", true)
         releaseResourceFile("runtime/script-api-bungee.jar", true)
         releaseResourceFile("runtime/script-api-velocity.jar", true)
+        releaseResourceFile("runtime/script-api-hytale.jar", true)
         releaseResourceFile("runtime/core-reflex.jar", true)
         // 如果运行文件不存在
         if (File(getDataFolder(), "runtime/core.jar").nonExists()) {

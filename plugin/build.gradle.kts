@@ -97,6 +97,7 @@ tasks {
         intoZip(version, "runtime/script-api-bukkit", "common-script-api-bukkit")
         intoZip(version, "runtime/script-api-bungee", "common-script-api-bungee")
         intoZip(version, "runtime/script-api-velocity", "common-script-api-velocity")
+        intoZip(version, "runtime/script-api-hytale", "common-script-api-hytale")
         // jar 代理
         intoZip(version, "proxy/bukkit", "jar-proxy-bukkit")
         intoZip(version, "proxy/bungee", "jar-proxy-bungee")
@@ -150,6 +151,7 @@ tasks {
         from(project(":project:common-script-api-bukkit").sourceSets["main"].output)
         from(project(":project:common-script-api-bungee").sourceSets["main"].output)
         from(project(":project:common-script-api-velocity").sourceSets["main"].output)
+        from(project(":project:common-script-api-hytale").sourceSets["main"].output)
     }
 
     register<ShadowJar>("sourceJar") {
@@ -166,6 +168,7 @@ tasks {
         from(project(":project:common-script-api-bukkit").sourceSets["main"].allSource)
         from(project(":project:common-script-api-bungee").sourceSets["main"].allSource)
         from(project(":project:common-script-api-velocity").sourceSets["main"].allSource)
+        from(project(":project:common-script-api-hytale").sourceSets["main"].allSource)
     }
 
     build {

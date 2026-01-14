@@ -30,7 +30,7 @@ plugins {
     id("org.gradle.maven-publish")
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.izzel.taboolib") version "2.0.23"
+    id("io.izzel.taboolib") version "2.0.28"
 }
 
 subprojects {
@@ -70,6 +70,10 @@ subprojects {
             )
             install(BungeeCord, Porticus)
             install(Velocity)
+            install(Hytale)
+
+            // local
+            repoTabooLib = project.repositories.mavenLocal().url.toString()
         }
         version {
             taboolib = taboolib_version
