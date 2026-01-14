@@ -26,7 +26,7 @@ object KotlinEnvironments {
      * 默认下载源
      */
     val repository: String
-        get() = "https://maven.aliyun.com/repository/central"
+        get() = PrimitiveSettings.REPO_CENTRAL
 
     /**
      * TabooLib 下载源
@@ -37,11 +37,22 @@ object KotlinEnvironments {
 
     private val baseDir = newFile(getDataFolder(), "runtime/libraries", folder = true)
 
-    private val kotlinVersion = "1.8.22"
+    private val kotlinVersion = "2.3.0"
 
 //    private val relocation = listOf(JarRelocation("kotlin", "kotlin${kotlinVersion.replace(".", "")}"))
 
+    /**
+     * Kotlin 2.0+ 已将 stdlib-common、stdlib-jdk7、stdlib-jdk8 合并到 stdlib 中
+     * 这些依赖在 Maven 仓库中只有 pom 文件，没有 jar 文件
+     */
+    private val excludedDependencies = setOf(
+        "org.jetbrains.kotlin:kotlin-stdlib-common",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    )
+
     fun loadDependencies() {
+
         loadDependencies("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-main-kts:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-script-runtime:$kotlinVersion", repository)
@@ -51,7 +62,7 @@ object KotlinEnvironments {
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:$kotlinVersion", repository)
         loadDependencies("org.jetbrains.intellij.deps:trove4j:1.0.20181211", repository)
-        loadDependencies("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0", repository)
+        loadDependencies("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0", repository)
         // 额外处理 common-reflex
         /*loadDependencies(
             "io.izzel.taboolib:common-reflex:${PrimitiveSettings.TABOOLIB_VERSION}",
@@ -63,7 +74,7 @@ object KotlinEnvironments {
 
     fun loadDependencies(source: String, repository: String, dir: File = baseDir, impl: Boolean = true) {
         val args = source.split(":")
-        val downloader = DependencyDownloader(dir)
+        val downloader = FilteredDependencyDownloader(dir, excludedDependencies)
         if (properties.contains("repository-$repository")) {
             downloader.addRepository(Repository(properties.getProperty("repository-$repository")))
         } else {
@@ -86,6 +97,34 @@ object KotlinEnvironments {
             downloader.repositories,
             Dependency(args[0], args[1], args[2], if (impl) DependencyScope.RUNTIME else DependencyScope.PROVIDED)
         )
+    }
+
+    /**
+     * 自定义的依赖下载器，可以排除特定的依赖（如 Kotlin 2.0+ 中仅存在 pom 的库）
+     */
+    private class FilteredDependencyDownloader(
+        file: File,
+        private val excludedDependencies: Set<String>
+    ) : DependencyDownloader(file) {
+
+        override fun loadDependency(repositories: MutableCollection<Repository>, dependency: Dependency): MutableSet<Dependency> {
+            val depKey = "${dependency.groupId}:${dependency.artifactId}"
+            if (excludedDependencies.contains(depKey)) {
+                // 跳过排除的依赖
+                PrimitiveIO.println("Skipping excluded dependency: $depKey:${dependency.version}")
+                return mutableSetOf()
+            }
+            return super.loadDependency(repositories, dependency)
+        }
+
+        override fun loadDependency(repositories: MutableList<Repository>, dependencies: MutableList<Dependency>): MutableSet<Dependency> {
+            // 过滤掉排除的依赖
+            val filtered = dependencies.filter { dependency ->
+                val depKey = "${dependency.groupId}:${dependency.artifactId}"
+                !excludedDependencies.contains(depKey)
+            }.toMutableList()
+            return super.loadDependency(repositories, filtered)
+        }
     }
 
     /*fun loadDependencies(

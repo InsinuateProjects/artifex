@@ -1,17 +1,4 @@
 import io.izzel.taboolib.gradle.*
-import javaslang.collection.LinkedHashSet
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.commons.ClassRemapper
-import org.objectweb.asm.commons.SimpleRemapper
-import java.io.FileOutputStream
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipException
 
 val taboolib_version: String by project
 
@@ -28,7 +15,7 @@ buildscript {
 plugins {
     id("org.gradle.java")
     id("org.gradle.maven-publish")
-    id("org.jetbrains.kotlin.jvm") version "1.8.22"
+    id("org.jetbrains.kotlin.jvm") version "2.3.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.izzel.taboolib") version "2.0.28"
 }
@@ -74,6 +61,7 @@ subprojects {
 
             // local
             repoTabooLib = project.repositories.mavenLocal().url.toString()
+            repoCentral = "https://repo1.maven.org/maven2"
         }
         version {
             taboolib = taboolib_version
@@ -179,8 +167,8 @@ subprojects {
     }
 
     tasks.register<Copy>("relocateClasses") {
-        val srcDir = file("$buildDir/classes/java/main")
-        val destDir = file("$buildDir/classes/java/main-relocated")
+        val srcDir = layout.buildDirectory.dir("classes/java/main").get().asFile
+        val destDir = layout.buildDirectory.dir("classes/java/main-relocated").get().asFile
 
         if (taboolib.isSubproject) {
             into(srcDir)
@@ -206,13 +194,13 @@ subprojects {
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=all")
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xjvm-default=all")
         }
     }
 
-    configure<JavaPluginConvention> {
+    java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -235,19 +223,21 @@ publishing {
         create<MavenPublication>("library") {
 //            from(components["java"])
             groupId = project.group.toString()
-            artifact(file("$buildDir/libs/artifex-$version-api.jar")) {
+            artifact(layout.buildDirectory.file("libs/artifex-$version-api.jar").get().asFile) {
                  classifier = ""
             }
-            artifact(file("$buildDir/libs/artifex-$version-sources.jar")) {
+            artifact(layout.buildDirectory.file("libs/artifex-$version-sources.jar").get().asFile) {
                  classifier = "source"
             }
         }
     }
 }
 
-gradle.buildFinished {
-    copy {
-        from(project(":plugin").layout.buildDirectory.dir("libs").get().asFile)
-        into(rootProject.layout.buildDirectory.dir("libs").get().asFile)
-    }
+tasks.register<Copy>("copyPluginArtifacts") {
+    from(project(":plugin").layout.buildDirectory.dir("libs"))
+    into(rootProject.layout.buildDirectory.dir("libs"))
+}
+
+tasks.named("build") {
+    finalizedBy("copyPluginArtifacts")
 }

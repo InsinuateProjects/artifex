@@ -37,7 +37,7 @@ import java.util.concurrent.Executors
     RuntimeDependency(
         "!me.lucko:jar-relocator:1.5",
         test = "me.lucko.jarrelocator.Relocation",
-        repository = "https://maven.aliyun.com/repository/central",
+//        repository = "https://maven.aliyun.com/repository/central",
         relocate = arrayOf("!org.objectweb.asm.", "!org.objectweb.asm9.")
     ),
     /*RuntimeDependency(

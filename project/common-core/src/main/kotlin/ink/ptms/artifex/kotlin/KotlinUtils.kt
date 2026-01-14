@@ -4,7 +4,6 @@ import ink.ptms.artifex.Artifex
 import ink.ptms.artifex.ImportScript
 import ink.ptms.artifex.script.ScriptResult
 import ink.ptms.artifex.script.ScriptSourceCode
-import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmCompiledModuleInMemoryImpl
 import java.io.File
 import kotlin.script.experimental.api.CompiledScript
 import kotlin.script.experimental.api.ScriptCompilationConfigurationKeys
@@ -84,7 +83,25 @@ fun CompiledScript.scriptClassFQName(): String {
 
 fun CompiledScript.compilerOutputFiles(): Map<String, ByteArray> {
     return when (this) {
-        is KJvmCompiledScript -> (getCompiledModule() as? KJvmCompiledModuleInMemoryImpl)?.compilerOutputFiles ?: HashMap()
+        is KJvmCompiledScript -> {
+            try {
+                // K2 兼容：使用反射访问 compilerOutputFiles，避免直接依赖内部类
+                val module = getCompiledModule()!!
+                val compilerOutputFilesField = module::class.java.getDeclaredField("compilerOutputFiles")
+                compilerOutputFilesField.isAccessible = true
+                @Suppress("UNCHECKED_CAST")
+                compilerOutputFilesField.get(module) as? Map<String, ByteArray> ?: HashMap()
+            } catch (_: Exception) {
+                // 如果反射失败，尝试通过方法访问
+                try {
+                    val module = getCompiledModule()!!
+                    @Suppress("UNCHECKED_CAST")
+                    module::class.java.getMethod("getCompilerOutputFiles").invoke(module) as? Map<String, ByteArray> ?: HashMap()
+                } catch (_: Exception) {
+                    HashMap()
+                }
+            }
+        }
         is ImportScript -> compilerOutputFiles
         else -> error("Unsupported $this")
     }

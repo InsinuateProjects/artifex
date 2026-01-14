@@ -175,13 +175,25 @@ open class KotlinScriptEvaluator : ScriptEvaluator {
 
     private fun ScriptEvaluationConfiguration.getOrPrepareShared(classLoader: ClassLoader): ScriptEvaluationConfiguration {
         val jvm = ScriptEvaluationConfiguration.jvm
-        val actualClassLoader = jvmScriptEvaluationKt.invokeMethod<PropertiesCollection.Key<ClassLoader>>("getActualClassLoader", jvm, isStatic = true)!!
-        return if (this[actualClassLoader] == null) {
+        return try {
+            // K2 兼容：尝试反射调用 getActualClassLoader
+            val actualClassLoader = jvmScriptEvaluationKt.invokeMethod<PropertiesCollection.Key<ClassLoader>>("getActualClassLoader", jvm, isStatic = true)!!
+            if (this[actualClassLoader] == null) {
+                with {
+                    actualClassLoader(classLoader)
+                    jvm.scriptsInstancesSharingMap(mutableMapOf())
+                }
+            } else {
+                this
+            }
+        } catch (e: NoSuchMethodException) {
+            // K2 fallback：如果方法不存在，使用简化的配置
             with {
-                actualClassLoader(classLoader)
                 jvm.scriptsInstancesSharingMap(mutableMapOf())
             }
-        } else {
+        } catch (e: Exception) {
+            // 其他异常，记录并使用当前配置
+            e.printStackTrace()
             this
         }
     }
